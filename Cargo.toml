@@ -1,0 +1,37 @@
+[package]
+name = "rag-demo"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+reqwest = { version = "0.12", features = ["json", "blocking"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+pdf-extract = "0.7"
+uuid = { version = "1.10", features = ["v4", "serde"] }
+clap = { version = "4.4", features = ["derive"] }
+anyhow = "1.0"
+
+[[bin]]
+name = "pdf-to-embeddings"
+path = "src/pdf_to_embeddings.rs"
+
+[[bin]]
+name = "search-qdrant"
+path = "src/search_qdrant.rs"
+
+[[bin]]
+name = "ingest-markdown"
+path = "src/ingest_markdown.rs"
+
+[[bin]]
+name = "ingest-markdown-multi"
+path = "src/ingest_markdown_multi.rs"
+
+[[bin]]
+name = "ingest-hierarchical"
+path = "src/ingest_hierarchical.rs"
+
+[[bin]]
+name = "search-hierarchical"
+path = "src/search_hierarchical.rs"
