@@ -15,6 +15,16 @@ A local RAG (Retrieval-Augmented Generation) system using:
 - **Interactive chat**: Real-time RAG queries with performance metrics
 - **LLM-agnostic**: Works with any Ollama-supported model
 
+## Current System State
+
+As of latest testing:
+- **11 PDFs ingested**: ~97MB of Rust programming books
+- **9,193 vectors stored**: 2,278 parent chunks + 6,915 child chunks
+- **Storage efficiency**: 94MB Qdrant storage (smaller than source PDFs!)
+- **Query performance**: 66ms average, all queries under 100ms
+- **Deduplication working**: Checksums prevent re-ingestion
+- **HNSW index active**: Provides O(log n) search complexity
+
 ## Prerequisites
 
 1. **Docker** - For running Qdrant
@@ -50,24 +60,40 @@ A local RAG (Retrieval-Augmented Generation) system using:
    ./scripts/health-check.sh
    ```
 
-3. **Ingest a PDF:**
+3. **Ingest PDFs (with deduplication):**
    ```bash
-   ./scripts/ingest-pdf.sh path/to/document.pdf
+   # Single PDF with smart chunking
+   ./scripts/ingest-pdf-smart.sh path/to/document.pdf
+   
+   # Or bulk ingest all PDFs in ./ingest/
+   ./scripts/ingest-all-pdfs.sh
    ```
 
 4. **Query with RAG:**
    ```bash
    ./scripts/query-rag.sh "What is the main topic of the document?"
+   
+   # Or interactive mode
+   ./scripts/interactive-rag.sh
    ```
 
 ## Scripts
 
+### Core Operations
 - `setup-qdrant.sh` - Installs and starts Qdrant in Docker with persistent storage
-- `ingest-pdf.sh` - Extracts text from PDF and stores embeddings in Qdrant
-- `query-rag.sh` - Searches for relevant context and generates answers
 - `health-check.sh` - Verifies all components are running
-- `interactive-rag.sh` - Interactive chat interface with performance metrics
 - `qdrant-stats.sh` - Display detailed database statistics and performance
+- `reset-qdrant.sh` - Clear and recreate the collection (requires confirmation)
+
+### Ingestion Scripts
+- `ingest-pdf-smart.sh` - Smart PDF ingestion via Markdown conversion with hierarchical chunking
+- `ingest-all-pdfs.sh` - Bulk ingest with SHA-256 deduplication
+- `pdf-to-markdown.sh` - Convert PDF to Markdown preserving code blocks
+
+### Query Scripts  
+- `query-rag.sh` - Single query with RAG context
+- `interactive-rag.sh` - Interactive chat interface with performance metrics
+- `benchmark-queries.sh` - Performance testing suite
 
 ## Architecture
 
@@ -81,10 +107,17 @@ Query → [search-qdrant] → Ollama (embeddings) → Qdrant (search)
 
 ## Rust Tools
 
-The project includes two Rust CLI tools:
+The project includes several Rust CLI tools:
 
-- **pdf-to-embeddings** - Extracts text from PDFs, chunks it, generates embeddings via Ollama, and stores in Qdrant
-- **search-qdrant** - Generates query embeddings and searches Qdrant for similar documents
+### Primary Tools (Hierarchical Strategy)
+- **ingest-hierarchical** - Creates parent-child chunks for optimal retrieval (recommended)
+- **search-hierarchical** - Searches with parent context awareness
+
+### Alternative Strategies
+- **ingest-markdown** - Smart chunking that preserves code blocks
+- **ingest-markdown-multi** - Multi-scale chunking at different sizes
+- **pdf-to-embeddings** - Original simple chunking (legacy)
+- **search-qdrant** - Basic search without hierarchy
 
 Build with:
 ```bash
@@ -115,14 +148,15 @@ docker run -v $(pwd)/qdrant_storage:/qdrant/storage qdrant/qdrant
 
 ## Performance & Indexing
 
-### Current Performance
-- **Search latency**: 50-75ms (without indexing)
-- **828 vectors**: 2MB memory usage
+### Current Performance (with 11 PDFs ingested)
+- **Search latency**: 54-81ms average (66ms median)
+- **9,193 vectors**: 94MB storage usage
 - **Distance metric**: Cosine similarity
-- **Indexing status**: Not yet indexed (automatic at 10,000 vectors)
+- **Indexing status**: ✅ Fully indexed with HNSW
+- **Chunking strategy**: Hierarchical parent-child (240 parents, 966 children per ~300 page PDF)
 
-### Why It's Fast Without Indexing
-Qdrant uses HNSW (Hierarchical Navigable Small World) indexing, but with only 828 vectors, brute-force search is still very fast. Indexing automatically kicks in at the `indexing_threshold` (default: 10,000 vectors).
+### Why It's Fast
+Qdrant's HNSW (Hierarchical Navigable Small World) index provides logarithmic search complexity. With 9,193 vectors indexed, queries complete in under 100ms consistently. The hierarchical chunking strategy ensures both precise retrieval (child chunks) and context preservation (parent chunks).
 
 ## Interactive Usage
 
@@ -158,23 +192,29 @@ Shows:
 - Sample stored data
 - Performance test results
 
-## Known Limitations
+## Known Limitations & Solutions
 
-1. **PDF extraction**: Code formatting is lost during extraction
-2. **Chunking**: 1000-character chunks may split code examples
-3. **Semantic search**: May not match code syntax well
-4. **Tips for better results**:
-   - Search for specific terms: "macro_rules!", "fn main"
-   - Ask about concepts rather than "show me an example"
-   - Use more specific queries
+1. **PDF extraction**: ~~Code formatting is lost~~ → **FIXED**: Using `pdftotext -layout` preserves formatting
+2. **Chunking**: ~~Small chunks split code~~ → **FIXED**: Hierarchical parent-child chunking preserves context
+3. **Collection deletion bug**: **FIXED**: Now checks if collection exists before creating
+4. **Remaining limitations**:
+   - Semantic search may not match exact code syntax (use keyword search for literals)
+   - PDF extraction quality depends on PDF structure
+   - Some PDFs may need manual markdown cleanup
 
 ## Improvements & Feature Requests
 
-### 🚀 Immediate Improvements
-- [ ] **Force indexing**: Configure HNSW index even for small datasets
-- [ ] **Better chunking**: Implement code-aware chunking to preserve examples
+### ✅ Completed Improvements
+- [x] **Hierarchical chunking**: Parent-child structure preserves context while enabling precise retrieval
+- [x] **Smart ingestion**: PDF→Markdown pipeline preserves code blocks
+- [x] **Deduplication**: SHA-256 checksums prevent re-ingesting identical files
+- [x] **Automatic indexing**: HNSW index builds automatically with sufficient vectors
+- [x] **Batch processing**: Handles large document sets efficiently
+
+### 🚀 Future Improvements
+- [ ] **Hybrid search**: Combine vector + keyword (BM25) search
 - [ ] **Metadata filtering**: Add file/chapter filtering to searches
-- [ ] **Hybrid search**: Combine vector + keyword search for better code finding
+- [ ] **Query expansion**: Automatically expand queries with synonyms
 
 ### 📈 Scalability Enhancements
 - [ ] **Sharding**: Configure for multiple collections/tenants
