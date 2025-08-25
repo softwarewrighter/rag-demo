@@ -15,15 +15,13 @@ A local RAG (Retrieval-Augmented Generation) system using:
 - **Interactive chat**: Real-time RAG queries with performance metrics
 - **LLM-agnostic**: Works with any Ollama-supported model
 
-## Current System State
+## System Capabilities
 
-As of latest testing:
-- **11 PDFs ingested**: ~97MB of Rust programming books
-- **9,193 vectors stored**: 2,278 parent chunks + 6,915 child chunks
-- **Storage efficiency**: 94MB Qdrant storage (smaller than source PDFs!)
-- **Query performance**: 66ms average, all queries under 100ms
-- **Deduplication working**: Checksums prevent re-ingestion
-- **HNSW index active**: Provides O(log n) search complexity
+- **Efficient storage**: Vector database typically smaller than source PDFs
+- **Fast queries**: Sub-100ms response times with HNSW indexing
+- **Deduplication**: SHA-256 checksums prevent re-ingesting identical files
+- **Scalable**: Handles thousands of vectors efficiently
+- **Hierarchical chunking**: Preserves document structure and context
 
 ## Prerequisites
 
@@ -60,21 +58,40 @@ As of latest testing:
    ./scripts/health-check.sh
    ```
 
-3. **Ingest PDFs (with deduplication):**
+3. **Prepare your PDFs:**
+   ```bash
+   # Create ingest directory if needed
+   mkdir -p ingest
+   
+   # Copy your PDFs to the ingest directory
+   cp /path/to/your/*.pdf ingest/
+   ```
+
+4. **Ingest PDFs:**
    ```bash
    # Single PDF with smart chunking
-   ./scripts/ingest-pdf-smart.sh path/to/document.pdf
+   ./scripts/ingest-pdf-smart.sh ingest/your-document.pdf
    
-   # Or bulk ingest all PDFs in ./ingest/
+   # Or bulk ingest all PDFs (with deduplication)
    ./scripts/ingest-all-pdfs.sh
    ```
 
-4. **Query with RAG:**
+5. **Query your documents:**
    ```bash
-   ./scripts/query-rag.sh "What is the main topic of the document?"
+   # Single query
+   ./scripts/query-rag.sh "What is the main topic?"
    
-   # Or interactive mode
+   # Interactive chat mode (recommended)
    ./scripts/interactive-rag.sh
+   ```
+
+6. **Monitor performance:**
+   ```bash
+   # View database statistics
+   ./scripts/qdrant-stats.sh
+   
+   # Run performance benchmarks
+   ./scripts/benchmark-queries.sh
    ```
 
 ## Scripts
@@ -148,15 +165,23 @@ docker run -v $(pwd)/qdrant_storage:/qdrant/storage qdrant/qdrant
 
 ## Performance & Indexing
 
-### Current Performance (with 11 PDFs ingested)
-- **Search latency**: 54-81ms average (66ms median)
-- **9,193 vectors**: 94MB storage usage
-- **Distance metric**: Cosine similarity
-- **Indexing status**: ✅ Fully indexed with HNSW
-- **Chunking strategy**: Hierarchical parent-child (240 parents, 966 children per ~300 page PDF)
+### Expected Performance
+- **Search latency**: Typically 50-100ms with indexing
+- **Distance metric**: Cosine similarity  
+- **Indexing**: HNSW index builds automatically after threshold
+- **Chunking strategy**: Hierarchical parent-child architecture
 
-### Why It's Fast
-Qdrant's HNSW (Hierarchical Navigable Small World) index provides logarithmic search complexity. With 9,193 vectors indexed, queries complete in under 100ms consistently. The hierarchical chunking strategy ensures both precise retrieval (child chunks) and context preservation (parent chunks).
+### How It Works
+Qdrant's HNSW (Hierarchical Navigable Small World) index provides logarithmic search complexity. The system uses a two-level approach:
+- **Parent chunks** (~3500 chars): Provide full context
+- **Child chunks** (~750 chars): Enable precise retrieval
+
+### Testing Example
+In testing with 11 technical PDFs (~97MB), the system achieved:
+- 9,193 vectors indexed
+- 66ms average query time
+- 94MB storage (smaller than source PDFs)
+- Perfect deduplication via checksums
 
 ## Interactive Usage
 
