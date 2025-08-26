@@ -12,14 +12,19 @@ RED='\033[0;31m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-PDF_FILE="$1"
-EXTRACTED_DIR="./extracted"
-
 if [ "$#" -ne 1 ]; then
     echo "Usage: $0 <pdf-file>"
     echo "Example: $0 document.pdf"
+    echo ""
+    echo "To use a specific collection:"
+    echo "  export RAG_COLLECTION=python-books"
+    echo "  $0 python-guide.pdf"
     exit 1
 fi
+
+PDF_FILE="$1"
+EXTRACTED_DIR="./extracted"
+COLLECTION="${RAG_COLLECTION:-documents}"
 
 if [ ! -f "$PDF_FILE" ]; then
     echo -e "${RED}❌ Error: PDF file not found: $PDF_FILE${NC}"
@@ -28,6 +33,7 @@ fi
 
 echo -e "${CYAN}🚀 Smart PDF Ingestion Pipeline${NC}"
 echo "════════════════════════════════════════"
+echo -e "${CYAN}Target collection: $COLLECTION${NC}"
 echo ""
 
 # Check prerequisites
@@ -76,7 +82,14 @@ fi
 echo -e "${YELLOW}Step 3: Markdown → Qdrant (with smart chunking)${NC}"
 echo "────────────────────────────────────────"
 
-./target/release/ingest-markdown "$MD_FILE"
+# Check if collection exists
+if ! curl -s "http://localhost:6333/collections/$COLLECTION" | grep -q '"status":"ok"'; then
+    echo -e "${YELLOW}⚠️  Collection '$COLLECTION' does not exist${NC}"
+    echo "Creating it now..."
+    ./scripts/setup-collection.sh "$COLLECTION"
+fi
+
+./target/release/ingest-markdown --collection "$COLLECTION" "$MD_FILE"
 
 echo ""
 echo -e "${GREEN}✨ Smart ingestion complete!${NC}"
@@ -87,7 +100,7 @@ echo -e "${CYAN}📊 Ingestion Statistics:${NC}"
 echo "────────────────────────────────────────"
 
 # Get collection stats
-VECTORS=$(curl -s http://localhost:6333/collections/documents | jq -r '.result.points_count // 0')
+VECTORS=$(curl -s "http://localhost:6333/collections/$COLLECTION" | jq -r '.result.points_count // 0')
 echo "  Total vectors in database: $VECTORS"
 
 # Test search for code

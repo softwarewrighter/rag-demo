@@ -4,13 +4,27 @@
 
 set -e
 
+# Colors
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
 if [ "$#" -ne 1 ]; then
     echo "Usage: $0 <pdf-file>"
     echo "Example: $0 document.pdf"
+    echo ""
+    echo "To use a specific collection:"
+    echo "  export RAG_COLLECTION=javascript-books"
+    echo "  $0 javascript-guide.pdf"
     exit 1
 fi
 
 PDF_FILE="$1"
+COLLECTION="${RAG_COLLECTION:-documents}"
+
+echo -e "${CYAN}Target collection: $COLLECTION${NC}"
 
 # Check if PDF exists
 if [ ! -f "$PDF_FILE" ]; then
@@ -42,8 +56,15 @@ if [ ! -f "target/release/pdf-to-embeddings" ]; then
     cargo build --release --bin pdf-to-embeddings
 fi
 
-# Run the ingestion
-echo "📄 Ingesting PDF: $PDF_FILE"
-./target/release/pdf-to-embeddings "$PDF_FILE"
+# Check if collection exists
+if ! curl -s "http://localhost:6333/collections/$COLLECTION" | grep -q '"status":"ok"'; then
+    echo -e "${YELLOW}⚠️  Collection '$COLLECTION' does not exist${NC}"
+    echo "Creating it now..."
+    ./scripts/setup-collection.sh "$COLLECTION"
+fi
 
-echo "✅ PDF ingestion complete!"
+# Run the ingestion
+echo "📄 Ingesting PDF: $PDF_FILE into collection: $COLLECTION"
+./target/release/pdf-to-embeddings --collection "$COLLECTION" "$PDF_FILE"
+
+echo -e "${GREEN}✅ PDF ingestion complete!${NC}"

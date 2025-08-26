@@ -9,11 +9,18 @@ if [ "$#" -lt 1 ]; then
     echo "Example: $0 'What is machine learning?' llama3.2"
     echo ""
     echo "Optional: Specify LLM model (default: llama3.2)"
+    echo ""
+    echo "To query a specific collection:"
+    echo "  export RAG_COLLECTION=python-books"
+    echo "  $0 'What are decorators?'"
     exit 1
 fi
 
 QUERY="$1"
 LLM_MODEL="${2:-llama3.2}"
+COLLECTION="${RAG_COLLECTION:-documents}"
+
+echo "🔍 Querying collection: $COLLECTION"
 
 # Check if Ollama is running
 if ! curl -s http://localhost:11434/api/tags > /dev/null 2>&1; then
@@ -47,7 +54,7 @@ fi
 
 # Search for relevant context
 echo "🔍 Searching knowledge base..."
-CONTEXT=$(./target/release/search-qdrant "$QUERY" --json 2>/dev/null | jq -r '.results[].text' 2>/dev/null | head -c 4000)
+CONTEXT=$(./target/release/search-qdrant "$QUERY" --collection "$COLLECTION" --json 2>/dev/null | jq -r '.results[].text' 2>/dev/null | head -c 4000)
 
 if [ -z "$CONTEXT" ]; then
     echo "⚠️  No relevant context found in knowledge base"

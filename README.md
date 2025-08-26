@@ -14,6 +14,7 @@ A local RAG (Retrieval-Augmented Generation) system using:
 - **Web UI**: Qdrant dashboard at http://localhost:6333/dashboard
 - **Interactive chat**: Real-time RAG queries with performance metrics
 - **LLM-agnostic**: Works with any Ollama-supported model
+- **Multi-collection support**: Organize different topics into separate collections
 
 ## System Capabilities
 
@@ -69,20 +70,34 @@ A local RAG (Retrieval-Augmented Generation) system using:
 
 4. **Ingest PDFs:**
    ```bash
-   # Single PDF with smart chunking
+   # Single PDF with smart chunking (default collection)
    ./scripts/ingest-pdf-smart.sh ingest/your-document.pdf
    
-   # Or bulk ingest all PDFs (with deduplication)
+   # Ingest into specific collection
+   export RAG_COLLECTION=python-books
+   ./scripts/ingest-pdf-smart.sh python-guide.pdf
+   
+   # Or use topic-specific scripts
+   ./scripts/ingest-javascript-books.sh ingest/*.js.pdf
+   ./scripts/ingest-python-books.sh ingest/*.py.pdf
+   
+   # Bulk ingest all PDFs (with deduplication)
    ./scripts/ingest-all-pdfs.sh
    ```
 
 5. **Query your documents:**
    ```bash
-   # Single query
+   # Query default collection
    ./scripts/query-rag.sh "What is the main topic?"
+   
+   # Query specific collection
+   RAG_COLLECTION=python-books ./scripts/query-rag.sh "What are decorators?"
    
    # Interactive chat mode (recommended)
    ./scripts/interactive-rag.sh
+   
+   # Interactive with specific collection
+   RAG_COLLECTION=javascript-books ./scripts/interactive-rag.sh
    ```
 
 6. **Monitor performance:**
@@ -98,14 +113,18 @@ A local RAG (Retrieval-Augmented Generation) system using:
 
 ### Core Operations
 - `setup-qdrant.sh` - Installs and starts Qdrant in Docker with persistent storage
+- `setup-collection.sh` - Create named collections with validation and aliases
 - `health-check.sh` - Verifies all components are running
 - `qdrant-stats.sh` - Display detailed database statistics and performance
 - `reset-qdrant.sh` - Clear and recreate the collection (requires confirmation)
+- `update-collection-alias.sh` - Add descriptive aliases to existing collections
 
 ### Ingestion Scripts
 - `ingest-pdf-smart.sh` - Smart PDF ingestion via Markdown conversion with hierarchical chunking
 - `ingest-all-pdfs.sh` - Bulk ingest with SHA-256 deduplication
 - `pdf-to-markdown.sh` - Convert PDF to Markdown preserving code blocks
+- `ingest-javascript-books.sh` - Ingest JavaScript documentation into dedicated collection
+- `ingest-python-books.sh` - Ingest Python documentation into dedicated collection
 
 ### Query Scripts  
 - `query-rag.sh` - Single query with RAG context
@@ -149,6 +168,26 @@ The query script accepts an optional model parameter:
 ./scripts/query-rag.sh "your question" mistral
 ./scripts/query-rag.sh "your question" gemma2
 ```
+
+## Multi-Collection Support
+
+Organize different document types into separate collections:
+
+```bash
+# Create topic-specific collections
+./scripts/setup-collection.sh javascript-books "JavaScript Documentation"
+./scripts/setup-collection.sh python-books "Python Documentation"
+./scripts/setup-collection.sh rust-books "Rust Programming Books"
+
+# Ingest into specific collections
+export RAG_COLLECTION=javascript-books
+./scripts/ingest-pdf-smart.sh javascript-guide.pdf
+
+# Query specific collections
+RAG_COLLECTION=python-books ./scripts/query-rag.sh "What are decorators?"
+```
+
+See [docs/multi-collection-guide.md](docs/multi-collection-guide.md) for detailed usage.
 
 ## Data Persistence & Storage
 
