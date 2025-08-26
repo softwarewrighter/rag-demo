@@ -72,9 +72,12 @@ while [ $attempt -lt $max_attempts ]; do
 done
 echo
 
-# Create default collection for documents
-echo "📚 Creating default collection 'documents'..."
-curl -s -X PUT "http://localhost:6333/collections/documents" \
+# Collection name can be overridden via environment variable
+COLLECTION_NAME="${RAG_COLLECTION:-documents}"
+COLLECTION_ALIAS="${RAG_ALIAS:-rust-books}"
+
+echo "📚 Creating collection '$COLLECTION_NAME'..."
+curl -s -X PUT "http://localhost:6333/collections/$COLLECTION_NAME" \
     -H "Content-Type: application/json" \
     -d '{
         "vectors": {
@@ -82,6 +85,23 @@ curl -s -X PUT "http://localhost:6333/collections/documents" \
             "distance": "Cosine"
         }
     }' > /dev/null 2>&1 || echo "Collection might already exist (that's OK)"
+
+# Add descriptive alias
+if [ -n "$COLLECTION_ALIAS" ]; then
+    echo "🏷️  Adding alias '$COLLECTION_ALIAS' for better clarity..."
+    curl -s -X POST "http://localhost:6333/collections/aliases" \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"actions\": [
+                {
+                    \"create_alias\": {
+                        \"collection_name\": \"$COLLECTION_NAME\",
+                        \"alias_name\": \"$COLLECTION_ALIAS\"
+                    }
+                }
+            ]
+        }" > /dev/null 2>&1 || true
+fi
 
 # Verify setup
 echo ""
