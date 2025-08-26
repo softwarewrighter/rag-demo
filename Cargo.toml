@@ -11,6 +11,7 @@ pdf-extract = "0.7"
 uuid = { version = "1.10", features = ["v4", "serde"] }
 clap = { version = "4.4", features = ["derive"] }
 anyhow = "1.0"
+colored = "2.0"
 
 [[bin]]
 name = "pdf-to-embeddings"
@@ -35,3 +36,7 @@ path = "src/ingest_hierarchical.rs"
 [[bin]]
 name = "search-hierarchical"
 path = "src/search_hierarchical.rs"
+
+[[bin]]
+name = "ingest-by-directory"
+path = "src/ingest_by_directory.rs"

@@ -18,9 +18,10 @@ if [ $# -lt 1 ]; then
     echo -e "${RED}❌ Error: Collection name required${NC}"
     echo "Usage: $0 <collection-name> [alias]"
     echo "Examples:"
-    echo "  $0 rust-books \"Rust Programming Books\""
-    echo "  $0 javascript-books \"JavaScript Documentation\""
-    echo "  $0 python-books \"Python References\""
+    echo "  $0 rust-books"
+    echo "  $0 javascript-books"
+    echo "  $0 python-books"
+    echo "  $0 lisp-books"
     exit 1
 fi
 

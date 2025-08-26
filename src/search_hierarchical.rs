@@ -199,7 +199,7 @@ fn main() -> Result<()> {
                 };
 
                 hierarchical_results.push(HierarchicalResult {
-                    child: child,
+                    child,
                     parent,
                     combined_text,
                 });

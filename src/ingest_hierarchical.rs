@@ -522,17 +522,14 @@ fn main() -> Result<()> {
 
     // Upload all points
     println!("📤 Uploading to Qdrant...");
-    let all_points: Vec<QdrantPoint> = parent_points
-        .into_iter()
-        .chain(child_points.into_iter())
-        .collect();
+    let all_points: Vec<QdrantPoint> = parent_points.into_iter().chain(child_points).collect();
 
     let batch_size = 100;
     for (i, batch) in all_points.chunks(batch_size).enumerate() {
         print!(
             "  Uploading batch {}/{}...\r",
             i + 1,
-            (all_points.len() + batch_size - 1) / batch_size
+            all_points.len().div_ceil(batch_size)
         );
 
         let response = client

@@ -47,6 +47,7 @@ struct EmbeddingResponse {
 
 #[derive(Debug, Deserialize)]
 struct SearchResult {
+    #[allow(dead_code)]
     id: String,
     score: f32,
     payload: serde_json::Value,

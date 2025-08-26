@@ -113,23 +113,29 @@ A local RAG (Retrieval-Augmented Generation) system using:
 
 ### Core Operations
 - `setup-qdrant.sh` - Installs and starts Qdrant in Docker with persistent storage
-- `setup-collection.sh` - Create named collections with validation and aliases
+- `setup-collection.sh` - Create named collections with validation (prevents generic names)
 - `health-check.sh` - Verifies all components are running
 - `qdrant-stats.sh` - Display detailed database statistics and performance
 - `reset-qdrant.sh` - Clear and recreate the collection (requires confirmation)
-- `update-collection-alias.sh` - Add descriptive aliases to existing collections
+- `update-collection-alias.sh` - Add descriptive aliases to existing collections (optional)
 
 ### Ingestion Scripts
 - `ingest-pdf-smart.sh` - Smart PDF ingestion via Markdown conversion with hierarchical chunking
-- `ingest-all-pdfs.sh` - Bulk ingest with SHA-256 deduplication
+- `ingest-all-pdfs.sh` - Bulk ingest with SHA-256 deduplication (single collection)
+- `ingest-by-directory.sh` - Process subdirectories into separate collections (Rust-based)
+- `ingest-all-by-directory.sh` - Wrapper for directory-based ingestion
 - `pdf-to-markdown.sh` - Convert PDF to Markdown preserving code blocks
 - `ingest-javascript-books.sh` - Ingest JavaScript documentation into dedicated collection
 - `ingest-python-books.sh` - Ingest Python documentation into dedicated collection
 
-### Query Scripts  
-- `query-rag.sh` - Single query with RAG context
+### Query Scripts
+- `query-rag.sh` - Single query with RAG context (supports collection selection)
 - `interactive-rag.sh` - Interactive chat interface with performance metrics
 - `benchmark-queries.sh` - Performance testing suite
+
+### Monitoring Scripts
+- `verify-collections.sh` - Verify collection status and indexing performance
+- `ingestion-status.sh` - Real-time monitoring of ingestion progress
 
 ## Architecture
 
@@ -148,6 +154,7 @@ The project includes several Rust CLI tools:
 ### Primary Tools (Hierarchical Strategy)
 - **ingest-hierarchical** - Creates parent-child chunks for optimal retrieval (recommended)
 - **search-hierarchical** - Searches with parent context awareness
+- **ingest-by-directory** - Processes directories of PDFs into separate collections
 
 ### Alternative Strategies
 - **ingest-markdown** - Smart chunking that preserves code blocks
@@ -173,11 +180,27 @@ The query script accepts an optional model parameter:
 
 Organize different document types into separate collections:
 
+### Method 1: Directory-Based Ingestion (Recommended)
+```bash
+# Organize PDFs in subdirectories
+mkdir -p ingest/{rust,javascript,python,lisp}
+cp rust-books/*.pdf ingest/rust/
+cp js-books/*.pdf ingest/javascript/
+
+# Ingest all directories into separate collections
+./scripts/ingest-by-directory.sh
+# Creates: rust-books, javascript-books, python-books, lisp-books
+
+# Monitor ingestion progress
+./scripts/ingestion-status.sh
+```
+
+### Method 2: Manual Collection Management
 ```bash
 # Create topic-specific collections
-./scripts/setup-collection.sh javascript-books "JavaScript Documentation"
-./scripts/setup-collection.sh python-books "Python Documentation"
-./scripts/setup-collection.sh rust-books "Rust Programming Books"
+./scripts/setup-collection.sh javascript-books
+./scripts/setup-collection.sh python-books
+./scripts/setup-collection.sh rust-books
 
 # Ingest into specific collections
 export RAG_COLLECTION=javascript-books
@@ -185,6 +208,16 @@ export RAG_COLLECTION=javascript-books
 
 # Query specific collections
 RAG_COLLECTION=python-books ./scripts/query-rag.sh "What are decorators?"
+RAG_COLLECTION=rust-books ./scripts/query-rag.sh "Explain ownership"
+```
+
+### Verify Collections
+```bash
+# Check all collections status
+./scripts/verify-collections.sh
+
+# View dashboard
+open http://localhost:6333/dashboard
 ```
 
 See [docs/multi-collection-guide.md](docs/multi-collection-guide.md) for detailed usage.

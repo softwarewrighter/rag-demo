@@ -256,6 +256,102 @@ While fixing this, also added:
 - Append mode with timestamp separator for existing learnings files
 - This ensures knowledge is propagated to projects using the tool
 
+## Collection Management and Naming
+
+### Issue: Generic Collection Names
+**Problem**: Using "documents" as a collection name is too generic and confusing when managing multiple document types.
+
+**Resolution**: 
+- Created validation in `setup-collection.sh` to warn about generic names
+- Implemented directory-based ingestion that auto-names collections based on content type
+- Collections should be named descriptively: `rust-books`, `javascript-docs`, `python-tutorials`
+
+**Proactive Prevention**:
+- Always use descriptive collection names that indicate content type
+- Never use generic names like "documents", "data", "collection1"
+- Consider the collection name from a user's perspective in the dashboard
+
+### Issue: Bash Associative Arrays on macOS
+**Problem**: `declare -A` for associative arrays doesn't work on macOS bash (v3.x)
+
+**Resolution**: Use alternative approaches:
+- Simple variables for fixed sets
+- Case statements for mapping
+- Consider Rust for complex scripting needs
+
+**Proactive Prevention**:
+- Test bash scripts on macOS before assuming Linux-specific features
+- Use Rust for complex data structure manipulation
+- Keep bash scripts simple and portable
+
+### Issue: Directory Processing Order
+**Problem**: `fs::read_dir()` in Rust doesn't guarantee alphabetical order - returns filesystem order
+
+**Resolution**: Sort entries before processing if order matters:
+```rust
+let mut entries: Vec<_> = fs::read_dir(path)?.collect();
+entries.sort_by_key(|e| e.path());
+```
+
+**Proactive Prevention**:
+- Never assume `read_dir()` returns sorted results
+- Explicitly sort when order matters
+- Document when processing order is important
+
+## Common Clippy Issues to Avoid
+
+### needless_borrows_for_generic_args
+**Problem**: Unnecessarily borrowing arrays when passing to functions
+```rust
+// INCORRECT
+.args(&["pull", "nomic-embed-text"])
+
+// CORRECT
+.args(["pull", "nomic-embed-text"])
+```
+
+### redundant_field_names
+**Problem**: Redundant field names in struct initialization
+```rust
+// INCORRECT
+HierarchicalResult {
+    child: child,
+    parent,
+}
+
+// CORRECT
+HierarchicalResult {
+    child,
+    parent,
+}
+```
+
+### manual_div_ceil
+**Problem**: Manually implementing division with ceiling
+```rust
+// INCORRECT
+(all_points.len() + batch_size - 1) / batch_size
+
+// CORRECT
+all_points.len().div_ceil(batch_size)
+```
+
+### useless_conversion
+**Problem**: Explicitly calling .into_iter() when not needed
+```rust
+// INCORRECT
+.chain(child_points.into_iter())
+
+// CORRECT
+.chain(child_points)
+```
+
+**Proactive Prevention**:
+- Always run `cargo clippy` before committing
+- Pay attention to needless borrows especially with arrays
+- Use shorthand field initialization when field name matches variable
+- Use built-in math methods like div_ceil() instead of manual implementations
+
 ## Continuous Improvement
 
 Each time a new pattern of issue is discovered:
