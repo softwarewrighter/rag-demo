@@ -17,7 +17,7 @@ if [ "$#" -lt 1 ]; then
 fi
 
 QUERY="$1"
-LLM_MODEL="${2:-llama3.2}"
+LLM_MODEL="${2:-mistral:7b}"
 COLLECTION="${RAG_COLLECTION:-documents}"
 
 echo "🔍 Querying collection: $COLLECTION"
@@ -81,10 +81,14 @@ fi
 echo ""
 echo "🤖 Answer:"
 echo "────────────────────────────────────────"
+# Properly escape the prompt for JSON
+ESCAPED_PROMPT=$(echo "$PROMPT" | jq -Rs .)
+JSON_PAYLOAD=$(jq -n \
+    --arg model "$LLM_MODEL" \
+    --argjson prompt "$ESCAPED_PROMPT" \
+    '{model: $model, prompt: $prompt, stream: false}')
+
 curl -s -X POST http://localhost:11434/api/generate \
-    -d "{
-        \"model\": \"$LLM_MODEL\",
-        \"prompt\": \"$PROMPT\",
-        \"stream\": false
-    }" | jq -r '.response'
+    -H "Content-Type: application/json" \
+    -d "$JSON_PAYLOAD" | jq -r '.response'
 echo "────────────────────────────────────────"

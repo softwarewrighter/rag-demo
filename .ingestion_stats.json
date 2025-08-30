@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-08-25T22:30:38Z",
-  "total_pdfs": 11,
-  "new_pdfs": 0,
-  "skipped_pdfs": 11,
+  "timestamp": "2025-08-30T22:28:02Z",
+  "total_pdfs": 3,
+  "new_pdfs": 2,
+  "skipped_pdfs": 1,
   "failed_pdfs": 0,
-  "total_chunks": 0,
-  "new_vectors": 0,
-  "total_vectors": 9193,
-  "processing_time_seconds": 0
+  "total_chunks": 812,
+  "new_vectors": 812,
+  "total_vectors": 2244,
+  "processing_time_seconds": 46
 }
