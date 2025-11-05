@@ -35,7 +35,7 @@ For the complete interactive experience with real document ingestion and search:
 
 - ✅ Shows the dashboard UI
 - ✅ Demonstrates search interface
-- ✅ Displays sample results
+- ✅ Displays sample results with synthetic data
 - ❌ Cannot connect to real Qdrant/Ollama backend
 - ❌ Cannot ingest real documents
 - ❌ Shows only pre-generated mocked data
