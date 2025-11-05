@@ -12,7 +12,7 @@ A local RAG (Retrieval-Augmented Generation) system using:
 
 **Try the limited demo:** [https://softwarewrighter.github.io/rag-demo/](https://softwarewrighter.github.io/rag-demo/)
 
-⚠️ **Note:** The live demo uses mocked data and cannot connect to a real backend. For the full interactive experience with real document ingestion and search, clone and run locally (see Quick Start below).
+⚠️ **Note:** The live demo uses **synthetic mocked data only** (no copyrighted content). For the full interactive experience with real document ingestion and search, clone and run locally (see Quick Start below). Your documents remain private and local.
 
 ## 📸 Screenshots
 
@@ -32,6 +32,25 @@ Additional resources:
 - [Multi-Collection Guide](./documentation/multi-collection-guide.md) - Organize documents by topic
 - [Development Guide (CLAUDE.md)](./CLAUDE.md) - Architecture and development instructions
 - [Learnings](./documentation/learnings.md) - Common issues and solutions
+
+## 🔒 Privacy & Data
+
+**Your documents stay private:**
+- All processing happens locally on your machine
+- No data sent to external services
+- PDF documents, extracts, and embeddings are gitignored
+- Only you have access to your ingested content
+
+**What's in this public repository:**
+- Source code (MIT License)
+- Documentation and guides
+- Synthetic demo data only (no real document content)
+
+**What's NOT in this repository** (gitignored):
+- `/ingest/` - Your PDF documents
+- `/extracted/` - Document extracts
+- `/qdrant_storage/` - Vector database with your content
+- All copyrighted material remains local and private
 
 ## 🎯 Features
 

@@ -2,7 +2,24 @@
 
 This is a **limited static demo** of the RAG Demo Dashboard hosted on GitHub Pages.
 
-⚠️ **Important:** This demo uses mocked data and does not have a real backend. It's intended to show the UI and basic interaction flow.
+⚠️ **Important:** This demo uses **synthetic mocked data only**. No actual copyrighted document content is included in this repository.
+
+## Data Privacy & Copyright Notice
+
+**This repository does NOT contain:**
+- Real PDF documents (excluded via `.gitignore`)
+- Actual document content or extracts
+- Vector database embeddings
+- Any copyrighted material from ingested documents
+
+**All demo data is synthetic** - created specifically for demonstration purposes using general programming knowledge.
+
+**Real content locations** (all gitignored and private):
+- `/ingest/` - Your PDF documents (never committed)
+- `/extracted/` - Markdown extracts (never committed)
+- `/qdrant_storage/` - Vector database (never committed)
+
+These directories are **never pushed to GitHub** to ensure your copyrighted documents remain private and local-only.
 
 ## To Use the Full Version
 
