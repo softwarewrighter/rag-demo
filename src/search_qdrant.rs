@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Michael A. Wright
+// Licensed under the MIT License
+
 use anyhow::{Context, Result};
 use clap::Parser;
 use reqwest::blocking::Client;

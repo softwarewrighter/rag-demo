@@ -1,10 +1,37 @@
 # RAG Demo with Qdrant and Ollama
 
+> **Copyright © 2025 Michael A. Wright** | Licensed under the [MIT License](LICENSE)
+
 A local RAG (Retrieval-Augmented Generation) system using:
 - **Qdrant** - Vector database for storing and searching embeddings
-- **Ollama** - Local LLM for embeddings and text generation  
+- **Ollama** - Local LLM for embeddings and text generation
 - **Rust** - PDF processing and embedding tools
 - **Bash** - Orchestration scripts
+
+## 🎭 Live Demo
+
+**Try the limited demo:** [https://softwarewrighter.github.io/rag-demo/](https://softwarewrighter.github.io/rag-demo/)
+
+⚠️ **Note:** The live demo uses mocked data and cannot connect to a real backend. For the full interactive experience with real document ingestion and search, clone and run locally (see Quick Start below).
+
+## 📸 Screenshots
+
+### Interactive Dashboard
+![Dashboard Screenshot](./images/screenshot-dashboard.png)
+
+### Live Demo (GitHub Pages)
+![Live Demo Screenshot](./images/screenshot-live-demo.png)
+
+## 📖 Documentation
+
+**→ [Quick Start Guide](./documentation/quick-start.md)** - Complete walkthrough of all scripts and workflows
+
+**→ [Usage Examples](./documentation/usage-examples.md)** - 10 real-world scenarios with step-by-step commands
+
+Additional resources:
+- [Multi-Collection Guide](./documentation/multi-collection-guide.md) - Organize documents by topic
+- [Development Guide (CLAUDE.md)](./CLAUDE.md) - Architecture and development instructions
+- [Learnings](./documentation/learnings.md) - Common issues and solutions
 
 ## 🎯 Features
 
@@ -220,7 +247,7 @@ RAG_COLLECTION=rust-books ./scripts/query-rag.sh "Explain ownership"
 open http://localhost:6333/dashboard
 ```
 
-See [docs/multi-collection-guide.md](docs/multi-collection-guide.md) for detailed usage.
+See [documentation/multi-collection-guide.md](documentation/multi-collection-guide.md) for detailed usage.
 
 ## Data Persistence & Storage
 

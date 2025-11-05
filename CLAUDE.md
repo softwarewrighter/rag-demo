@@ -2,13 +2,15 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**Copyright © 2025 Michael A. Wright** | Licensed under the MIT License (see LICENSE file)
+
 ## ⚠️ CRITICAL: Review Before Making Changes
 
-**ALWAYS consult `./docs/learnings.md` BEFORE writing or modifying code** to avoid repeating past mistakes. This file contains specific issues encountered and their resolutions.
+**ALWAYS consult `./documentation/learnings.md` BEFORE writing or modifying code** to avoid repeating past mistakes. This file contains specific issues encountered and their resolutions.
 
 ## Project Overview
 
-This is a local RAG (Retrieval-Augmented Generation) system using Qdrant vector database and Ollama for LLM inference. The system ingests PDF documents, converts them to embeddings, and enables semantic search with LLM-powered answers.
+This is a local RAG (Retrieval-Augmented Generation) system using Qdrant vector database and Ollama for LLM inference. The system ingests PDF documents, converts them to embeddings, and enables semantic search with LLM-powered answers. Supports multi-collection organization for different document types (e.g., python-books, javascript-docs).
 
 ## Key Commands
 
@@ -23,6 +25,19 @@ cargo build --release --bin ingest-hierarchical
 # Run linting/checks
 cargo clippy
 cargo fmt
+```
+
+### Dashboard & Demo
+```bash
+# Build interactive dashboard (requires Qdrant + Ollama running)
+./scripts/build-dashboard.sh
+# Output: ./dashboard-dist/
+# Serve with: cd dashboard-dist && python3 -m http.server 8080
+
+# Build static demo for GitHub Pages (mocked data)
+./scripts/build-demo.sh
+# Output: ./docs/
+# This is automatically served at: https://softwarewrighter.github.io/rag-demo/
 ```
 
 ### System Setup & Health
@@ -41,8 +56,18 @@ ollama serve                     # Start Ollama (separate terminal)
 # Single PDF ingestion (uses hierarchical chunking)
 ./scripts/ingest-pdf-smart.sh document.pdf
 
+# Ingest into specific collection
+RAG_COLLECTION=python-books ./scripts/ingest-pdf-smart.sh python-guide.pdf
+
 # Bulk ingestion with deduplication
 ./scripts/ingest-all-pdfs.sh    # Processes ./ingest/*.pdf
+
+# Directory-based ingestion (each subdirectory becomes a collection)
+./scripts/ingest-by-directory.sh ./ingest
+
+# Topic-specific ingestion scripts
+./scripts/ingest-javascript-books.sh *.js.pdf
+./scripts/ingest-python-books.sh *.py.pdf
 
 # PDF to Markdown conversion
 ./scripts/pdf-to-markdown.sh input.pdf ./extracted/
@@ -50,11 +75,17 @@ ollama serve                     # Start Ollama (separate terminal)
 
 ### Querying & Search
 ```bash
-# Query with RAG
+# Query with RAG (default collection)
 ./scripts/query-rag.sh "your question"
+
+# Query specific collection
+RAG_COLLECTION=python-books ./scripts/query-rag.sh "What are decorators?"
 
 # Interactive chat
 ./scripts/interactive-rag.sh
+
+# Interactive with specific collection
+RAG_COLLECTION=javascript-books ./scripts/interactive-rag.sh
 
 # Direct search (returns raw results)
 ./target/release/search-hierarchical "search term" --limit 5
@@ -68,9 +99,19 @@ ollama serve                     # Start Ollama (separate terminal)
 # Reset database (requires confirmation)
 ./scripts/reset-qdrant.sh
 
+# Create new collection with alias
+./scripts/setup-collection.sh rust-books "Rust Documentation"
+
+# Update collection alias
+./scripts/update-collection-alias.sh collection-name "New Alias"
+
+# Verify collections
+./scripts/verify-collections.sh
+
 # Check ingested documents
 cat .ingested_checksums         # View SHA-256 checksums
 cat .ingestion_stats.json       # View last ingestion stats
+./scripts/ingestion-status.sh   # Current ingestion status
 ```
 
 ## Architecture & Key Components
@@ -92,11 +133,19 @@ The system uses **hierarchical parent-child chunking** based on research showing
    - Searches with parent-child awareness
    - Can return both child matches and parent context
 
-3. **pdf-to-embeddings** (`src/pdf_to_embeddings.rs`)
+3. **ingest-by-directory** (`src/ingest_by_directory.rs`)
+   - Ingests PDFs organized by subdirectory into separate collections
+   - Each subdirectory becomes its own collection
+
+4. **ingest-markdown-multi** (`src/ingest_markdown_multi.rs`)
+   - Ingests markdown files into specified collections
+   - Supports multi-collection workflows
+
+5. **pdf-to-embeddings** (`src/pdf_to_embeddings.rs`)
    - Legacy simple chunking (1000 chars with 200 overlap)
    - Still used by some scripts
 
-4. **ingest-markdown** (`src/ingest_markdown.rs`)
+6. **ingest-markdown** (`src/ingest_markdown.rs`)
    - Smart chunking that preserves code blocks
    - Used after PDF→Markdown conversion
 
@@ -109,10 +158,14 @@ PDF → pdftotext → Markdown → Hierarchical Chunking → Embeddings → Qdra
 ```
 
 ### Storage & Persistence
-- **Qdrant data**: `./qdrant_storage/` (Docker volume mount)
+- **Qdrant data**: `./qdrant_storage/` (Docker volume mount, gitignored)
 - **Extracted markdown**: `./extracted/` (gitignored)
 - **Checksums**: `.ingested_checksums` (prevents re-ingestion)
 - **Stats**: `.ingestion_stats.json`
+- **Dashboard build**: `./dashboard-dist/` (gitignored)
+- **GitHub Pages demo**: `./docs/` (committed, served on GitHub Pages)
+- **Screenshots**: `./images/` (committed)
+- **Documentation**: `./documentation/` (was `./docs/`, renamed to avoid conflict)
 
 ### Performance Characteristics
 - **Query latency**: 50-80ms with HNSW index
@@ -129,11 +182,13 @@ checksum|filepath|chunk_count|timestamp
 ```
 
 ### Qdrant Configuration
-- Collection name: `documents`
+- Default collection: `documents`
+- Topic collections: `python-books`, `javascript-books`, `rust-books`, etc.
 - Distance metric: Cosine
 - Vector size: 768
 - HNSW parameters: m=16, ef_construct=200
 - Automatic indexing threshold: 100 vectors
+- Collections support human-readable aliases
 
 ### Chunking Strategy Evolution
 1. **v1**: Simple 1000-char chunks (poor context)
@@ -196,7 +251,7 @@ cargo fmt
 ### 5. Update Documentation
 - Update README.md if functionality changed
 - Update this CLAUDE.md file if development process changed  
-- **CRITICAL: Update docs/learnings.md with ANY new errors encountered and their fixes**
+- **CRITICAL: Update documentation/learnings.md with ANY new errors encountered and their fixes**
 - Ensure all public Rust items have doc comments
 - If you fixed a bug that could have been avoided by checking learnings.md, add it!
 
@@ -231,6 +286,18 @@ git push  # CRITICAL: Always push so code can be tested on other systems
 2. Add to `Cargo.toml` under `[[bin]]`
 3. Update ingestion scripts to use new binary
 
+### Working with Collections
+```bash
+# Set target collection for operations
+export RAG_COLLECTION=python-books
+
+# Create collection with alias
+./scripts/setup-collection.sh ml-papers "Machine Learning Papers"
+
+# List all collections
+curl -s http://localhost:6333/collections | jq '.result[].name'
+```
+
 ### Modifying chunk sizes
 Edit constants in `src/ingest_hierarchical.rs`:
 - `CHILD_TARGET_SIZE`: 1600 (chars)
@@ -238,7 +305,8 @@ Edit constants in `src/ingest_hierarchical.rs`:
 
 ### Forcing index rebuild
 ```bash
-curl -X POST http://localhost:6333/collections/documents/index \
+# For specific collection
+curl -X POST http://localhost:6333/collections/python-books/index \
   -H "Content-Type: application/json" \
   -d '{"wait": true}'
 ```
@@ -249,7 +317,7 @@ curl -X POST http://localhost:6333/collections/documents/index \
 - At least 4GB RAM for processing large PDFs
 - Port 6333 available for Qdrant
 
-## Known Issues from docs/learnings.md
+## Known Issues from documentation/learnings.md
 
 ### Critical Bugs Fixed
 1. **Collection deletion on each ingest** - ingest_hierarchical.rs was deleting and recreating the collection each time. Now checks if exists first.

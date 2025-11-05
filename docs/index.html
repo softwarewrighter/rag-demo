@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Demo Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔍 RAG Demo Dashboard</h1>
+            <p class="subtitle">Local Retrieval-Augmented Generation with Qdrant + Ollama</p>
+        </header>
+
+        <main>
+            <section class="search-section">
+                <h2>Search Documents</h2>
+                <div class="search-controls">
+                    <select id="collection-select" class="collection-select">
+                        <option value="">Loading collections...</option>
+                    </select>
+                    <div class="search-box">
+                        <input
+                            type="text"
+                            id="query-input"
+                            placeholder="Enter your question..."
+                            class="search-input"
+                        >
+                        <button id="search-btn" class="search-btn">Search</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="results-section" id="results-section" style="display: none;">
+                <h2>Results</h2>
+                <div id="results-container"></div>
+            </section>
+
+            <section class="stats-section">
+                <h2>System Status</h2>
+                <div id="stats-container" class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Collections</div>
+                        <div class="stat-value" id="stat-collections">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Vectors</div>
+                        <div class="stat-value" id="stat-vectors">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Qdrant Status</div>
+                        <div class="stat-value" id="stat-qdrant">Checking...</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Ollama Status</div>
+                        <div class="stat-value" id="stat-ollama">Checking...</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="footer-row">
+                    <div class="footer-left">
+                        <span class="copyright">Copyright &copy; 2025 Michael A. Wright</span>
+                        <span class="separator">|</span>
+                        <span class="license">Licensed under the <a href="https://opensource.org/licenses/MIT" target="_blank">MIT License</a></span>
+                    </div>
+                    <div class="footer-right">
+                        <a href="https://github.com/softwarewrighter/rag-demo" target="_blank" class="github-link">
+                            View on GitHub →
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-row footer-build">
+                    <div class="build-info">
+                        Build: <span id="build-host">mighty</span> | <span id="build-sha">bd0c5d2</span> | <span id="build-time">2025-11-05T16:51:53Z</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

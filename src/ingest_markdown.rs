@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Michael A. Wright
+// Licensed under the MIT License
+
 use anyhow::{Context, Result};
 use clap::Parser;
 use reqwest::blocking::Client;
@@ -56,15 +59,19 @@ struct MarkdownChunk {
     content: String,
     chunk_type: ChunkType,
     header_context: String,
+    #[allow(dead_code)]
     index: usize,
 }
 
 #[derive(Debug, Clone, Serialize)]
 enum ChunkType {
+    #[allow(dead_code)]
     Header,
     CodeBlock,
     Text,
+    #[allow(dead_code)]
     List,
+    #[allow(dead_code)]
     Table,
 }
 
@@ -272,7 +279,7 @@ fn main() -> Result<()> {
     // Upload to Qdrant in batches
     println!("📤 Uploading to Qdrant collection: {}", args.collection);
     let batch_size = 100;
-    let total_batches = (points.len() + batch_size - 1) / batch_size;
+    let total_batches = points.len().div_ceil(batch_size);
 
     for (i, batch) in points.chunks(batch_size).enumerate() {
         print!("  Uploading batch {}/{}...\r", i + 1, total_batches);

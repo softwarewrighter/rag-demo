@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Michael A. Wright
+// Licensed under the MIT License
+
 use anyhow::{Context, Result};
 use clap::Parser;
 use reqwest::blocking::Client;
@@ -116,7 +119,7 @@ fn create_multi_scale_chunks(content: &str) -> Vec<Chunk> {
                 !in_code_block
                     && (
                         line.trim().is_empty() ||          // Paragraph break
-                    lines.get(i + 1).map_or(true, |next| next.starts_with('#'))
+                    lines.get(i + 1).is_none_or(|next| next.starts_with('#'))
                         // Before header
                     )
             };
@@ -238,8 +241,7 @@ fn semantic_chunk_markdown(content: &str, target_size: usize) -> Vec<Chunk> {
         // Check if we should create a chunk (but not in middle of code)
         if !in_code_block && current_chunk.len() >= target_size {
             // Look for good break point
-            if line.trim().is_empty() || lines.get(i + 1).map_or(true, |next| next.starts_with('#'))
-            {
+            if line.trim().is_empty() || lines.get(i + 1).is_none_or(|next| next.starts_with('#')) {
                 chunks.push(Chunk {
                     content: current_chunk.clone(),
                     start_line,
@@ -390,10 +392,7 @@ fn main() -> Result<()> {
     let mut collections: std::collections::HashMap<String, Vec<QdrantPoint>> =
         std::collections::HashMap::new();
     for (collection, point) in points {
-        collections
-            .entry(collection)
-            .or_insert_with(Vec::new)
-            .push(point);
+        collections.entry(collection).or_default().push(point);
     }
 
     // Upload to Qdrant
@@ -424,7 +423,7 @@ fn main() -> Result<()> {
             print!(
                 "  Uploading batch {}/{}...\r",
                 i + 1,
-                (points.len() + batch_size - 1) / batch_size
+                points.len().div_ceil(batch_size)
             );
 
             let response = client
