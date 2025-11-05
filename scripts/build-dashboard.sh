@@ -26,6 +26,12 @@ cp dashboard/index.html "$OUTPUT_DIR/"
 cp dashboard/style.css "$OUTPUT_DIR/"
 cp dashboard/app.js "$OUTPUT_DIR/"
 
+# Copy favicon if it exists
+if [ -f dashboard/favicon.ico ]; then
+    cp dashboard/favicon.ico "$OUTPUT_DIR/"
+    echo "  ✓ Copied favicon.ico"
+fi
+
 # Generate build information
 BUILD_HOST=$(hostname)
 BUILD_SHA=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")

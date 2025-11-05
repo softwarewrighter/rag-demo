@@ -27,6 +27,12 @@ echo -e "${YELLOW}Copying dashboard files...${NC}"
 cp dashboard/index.html "$OUTPUT_DIR/"
 cp dashboard/style.css "$OUTPUT_DIR/"
 
+# Copy favicon if it exists
+if [ -f dashboard/favicon.ico ]; then
+    cp dashboard/favicon.ico "$OUTPUT_DIR/"
+    echo "  ✓ Copied favicon.ico"
+fi
+
 # Use the demo version of the JavaScript (with mocked data)
 echo -e "${YELLOW}Using demo version with mocked data...${NC}"
 cp dashboard/app-demo.js "$OUTPUT_DIR/app.js"
