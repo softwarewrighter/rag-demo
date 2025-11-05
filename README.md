@@ -484,3 +484,61 @@ This system is designed to be LLM-agnostic and could be extended with:
 - Hybrid search (vector + keyword)
 - Multi-lingual support
 - Document versioning and updates
+
+---
+
+## 📚 References & Technologies
+
+This project is built with the following open-source technologies:
+
+### Core Components
+
+- **[Ollama](https://ollama.com/)** - Run large language models locally
+  - Used for: Embeddings generation and LLM inference
+  - [GitHub](https://github.com/ollama/ollama)
+
+- **[Qdrant](https://qdrant.tech/)** - High-performance vector database
+  - Used for: Storing and searching document embeddings
+  - [GitHub](https://github.com/qdrant/qdrant)
+  - [Documentation](https://qdrant.tech/documentation/)
+
+- **[Rust](https://www.rust-lang.org/)** - Systems programming language
+  - Used for: All ingestion and search tools
+  - [Install via rustup](https://rustup.rs/)
+  - [Documentation](https://doc.rust-lang.org/)
+
+- **[Docker](https://www.docker.com/)** - Container platform
+  - Used for: Running Qdrant in an isolated environment
+  - [Get Docker](https://docs.docker.com/get-docker/)
+
+### Additional Tools
+
+- **[jq](https://jqlang.github.io/jq/)** - Command-line JSON processor
+  - Used for: Parsing API responses in shell scripts
+  - Install: `brew install jq` (macOS) or `apt install jq` (Linux)
+
+### Key Rust Dependencies
+
+- [reqwest](https://docs.rs/reqwest/) - HTTP client for API calls
+- [serde](https://serde.rs/) - Serialization/deserialization
+- [clap](https://docs.rs/clap/) - Command-line argument parsing
+- [pdf-extract](https://docs.rs/pdf-extract/) - PDF text extraction
+- [uuid](https://docs.rs/uuid/) - UUID generation for document IDs
+
+### Research & Concepts
+
+- **RAG (Retrieval-Augmented Generation)** - Enhancing LLMs with external knowledge
+- **Vector Embeddings** - Representing text as high-dimensional vectors
+- **Semantic Search** - Finding documents by meaning, not just keywords
+- **HNSW Algorithm** - Hierarchical Navigable Small World graphs for fast vector search
+
+### Related Projects
+
+- [LangChain](https://www.langchain.com/) - Framework for LLM applications
+- [LlamaIndex](https://www.llamaindex.ai/) - Data framework for LLM apps
+- [ChromaDB](https://www.trychroma.com/) - Alternative vector database
+- [Weaviate](https://weaviate.io/) - Another vector database option
+
+---
+
+**Copyright © 2025 Michael A. Wright** | [MIT License](LICENSE)
