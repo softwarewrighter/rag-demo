@@ -49,3 +49,7 @@ path = "src/export_collection.rs"
 [[bin]]
 name = "import-collection"
 path = "src/import_collection.rs"
+
+[[bin]]
+name = "hybrid-search"
+path = "src/hybrid_search.rs"
