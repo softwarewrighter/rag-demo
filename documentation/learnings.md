@@ -2,6 +2,42 @@
 
 This document captures issues encountered during development and provides proactive strategies to prevent them in future AI agent coding sessions.
 
+## Critical Process Issues
+
+### 0. MANDATORY: Run Quality Checks Before Every Commit
+
+**Issue**: Code was committed without running clippy, causing CI/CD failures
+
+**Resolution**: ALWAYS run this sequence BEFORE committing:
+```bash
+cargo test --all-features && \
+  cargo clippy --all-targets --all-features -- -D warnings && \
+  cargo fmt --all
+```
+
+**Common Errors Found by Clippy:**
+1. `unused-imports` - Imported `HashSet` but never used it
+   - **Fix**: Remove the unused import entirely
+   - **DON'T**: Add `#[allow(unused_imports)]`
+
+2. `to-string-in-format-args` - Using `.to_string()` in format macros
+   - **Fix**: Remove the `.to_string()` call
+   - Example: `println!("{}",  "Vector".to_string())` → `println!("{}", "Vector")`
+
+3. `print-literal` - Literal strings with empty format placeholders
+   - **Fix**: Move literal directly into format string
+   - Example: `println!("{}", "text")` → `println!("text")`
+
+4. `unused-variables` - Variable declared but never used
+   - **Fix**: Prefix with underscore if intentionally unused: `_variable_name`
+
+**Proactive Prevention**:
+- **NEVER commit without running clippy first**
+- **ALWAYS fix warnings, never suppress them**
+- **RUN all three quality checks (test + clippy + fmt) before every commit**
+- **Treat clippy warnings as ERRORS** - use `-D warnings` flag
+- **Set up pre-commit hook** to automatically run quality checks
+
 ## Issues Encountered and Resolutions
 
 ### 1. Documentation Comment Style (clippy::empty-line-after-doc-comments)
