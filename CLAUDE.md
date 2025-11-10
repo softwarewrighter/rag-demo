@@ -96,6 +96,11 @@ RAG_COLLECTION=javascript-books ./scripts/interactive-rag.sh
 # Direct search (returns raw results)
 ./target/release/search-hierarchical "search term" --limit 5
 
+# Hybrid search (vector + keyword matching)
+./scripts/hybrid-search.sh "rust macros" --limit 10
+./scripts/hybrid-search.sh "fn main" --filter is_code=true
+./scripts/hybrid-search.sh "error handling" -v 0.5 -k 0.5
+
 # Performance benchmark
 ./scripts/benchmark-queries.sh
 ```
@@ -144,29 +149,35 @@ The system uses **hierarchical parent-child chunking** based on research showing
    - Searches with parent-child awareness
    - Can return both child matches and parent context
 
-3. **ingest-by-directory** (`src/ingest_by_directory.rs`)
+3. **hybrid-search** (`src/hybrid_search.rs`)
+   - Combines vector similarity with keyword matching
+   - Supports metadata filtering (is_code, source, chunk_type)
+   - Adjustable weights for vector vs keyword components
+   - 11 unit tests for keyword scoring and filtering
+
+4. **ingest-by-directory** (`src/ingest_by_directory.rs`)
    - Ingests PDFs organized by subdirectory into separate collections
    - Each subdirectory becomes its own collection
 
-4. **export-collection** (`src/export_collection.rs`)
+5. **export-collection** (`src/export_collection.rs`)
    - Exports Qdrant collections to JSON format
    - Supports with/without vectors for different use cases
    - Includes comprehensive unit tests
 
-5. **import-collection** (`src/import_collection.rs`)
+6. **import-collection** (`src/import_collection.rs`)
    - Imports collections from JSON backups
    - Can merge with existing collections or create new ones
    - Validates vector presence before import
 
-6. **ingest-markdown-multi** (`src/ingest_markdown_multi.rs`)
+7. **ingest-markdown-multi** (`src/ingest_markdown_multi.rs`)
    - Ingests markdown files into specified collections
    - Supports multi-collection workflows
 
-7. **pdf-to-embeddings** (`src/pdf_to_embeddings.rs`)
+8. **pdf-to-embeddings** (`src/pdf_to_embeddings.rs`)
    - Legacy simple chunking (1000 chars with 200 overlap)
    - Still used by some scripts
 
-8. **ingest-markdown** (`src/ingest_markdown.rs`)
+9. **ingest-markdown** (`src/ingest_markdown.rs`)
    - Smart chunking that preserves code blocks
    - Used after PDF→Markdown conversion
 
@@ -270,6 +281,7 @@ CI configuration: `.github/workflows/ci.yml`
 All Rust binaries now include comprehensive unit tests:
 - `ingest-hierarchical`: 15+ tests for chunking logic
 - `search-hierarchical`: 10+ tests for serialization/deserialization
+- `hybrid-search`: 11+ tests for keyword scoring and filtering
 - `export-collection`: 4+ tests for data structures
 - `import-collection`: 4+ tests for import validation
 
