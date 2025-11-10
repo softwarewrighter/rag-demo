@@ -10,7 +10,7 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about = "Hybrid search: vector + keyword matching", long_about = None)]
@@ -288,7 +288,7 @@ fn main() -> Result<()> {
     };
 
     if !args.json {
-        println!("🔍 Hybrid Search: {} + {}", "Vector".to_string(), "Keyword");
+        println!("🔍 Hybrid Search: Vector + Keyword");
         println!("   Query: {}", args.query);
         println!(
             "   Weights: {:.0}% vector, {:.0}% keyword",

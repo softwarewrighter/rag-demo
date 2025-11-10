@@ -22,7 +22,10 @@ struct Args {
     #[arg(long, default_value = "http://localhost:6333", help = "Qdrant URL")]
     qdrant_url: String,
 
-    #[arg(long, help = "Include vectors in export (increases file size significantly)")]
+    #[arg(
+        long,
+        help = "Include vectors in export (increases file size significantly)"
+    )]
     include_vectors: bool,
 
     #[arg(long, help = "Pretty print JSON output")]
@@ -194,8 +197,13 @@ fn main() -> Result<()> {
     }
 
     let batch_size = args.batch_size.unwrap_or(100);
-    let points =
-        export_points(&client, &args.qdrant_url, &args.collection, args.include_vectors, batch_size)?;
+    let points = export_points(
+        &client,
+        &args.qdrant_url,
+        &args.collection,
+        args.include_vectors,
+        batch_size,
+    )?;
 
     let export_data = ExportData {
         version: "1.0".to_string(),

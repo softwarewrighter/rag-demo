@@ -287,60 +287,131 @@ All Rust binaries now include comprehensive unit tests:
 
 ## 🛑 CHECKPOINT PROCESS - MANDATORY
 
-**Every checkpoint MUST follow this exact sequence:**
+**⚠️ CRITICAL: This process is NON-NEGOTIABLE. Skipping steps will cause CI/CD failures and break the codebase.**
+
+**Every checkpoint MUST follow this exact sequence IN ORDER:**
 
 ### 1. Check Git Status BEFORE Changes
 ```bash
 git status  # Document initial state
 ```
 
-### 2. Run Tests and Fix Issues
+### 2. Run Tests FIRST and Fix ALL Issues
 ```bash
-cargo test --all
-# Fix any failing tests BEFORE proceeding
+cargo test --all-features --verbose
+# ❌ DO NOT PROCEED if any tests fail
+# ✅ Fix ALL failing tests before continuing
 ```
 
-### 3. Run and Fix Linting
+**Why this is first:** Tests verify existing functionality works. If tests fail, your changes may have broken something.
+
+### 3. Run Clippy and FIX ALL Warnings
 ```bash
 cargo clippy --all-targets --all-features -- -D warnings
-# Fix ALL clippy warnings - they are errors
 ```
+
+**CRITICAL RULES:**
+- ❌ **NEVER disable warnings** with `#[allow(...)]` - warnings indicate real issues
+- ❌ **NEVER commit code with clippy warnings** - they will fail CI/CD
+- ✅ **FIX the underlying issue** - don't suppress it
+- ✅ **Treat warnings as errors** - the `-D warnings` flag makes them fatal
+
+**Common fixes:**
+- Unused imports → Remove them
+- Unused variables → Prefix with `_` or use them
+- `to_string()` in format strings → Remove it
+- Needless borrows → Remove the `&`
+- Format string literals → Use inline format args
 
 ### 4. Format Code
 ```bash
-cargo fmt
+cargo fmt --all
 ```
 
-### 5. Update Documentation
+**This is automatic** - just run it. Never skip this step.
+
+### 5. Verify Quality Checks Pass
+```bash
+# Run all three quality checks in sequence:
+cargo test --all-features && \
+  cargo clippy --all-targets --all-features -- -D warnings && \
+  cargo fmt --all -- --check
+```
+
+**All three MUST pass** before committing. If any fail, go back and fix them.
+
+### 6. Update Documentation
 - Update README.md if functionality changed
-- Update this CLAUDE.md file if development process changed  
+- Update this CLAUDE.md file if development process changed
 - **CRITICAL: Update documentation/learnings.md with ANY new errors encountered and their fixes**
 - Ensure all public Rust items have doc comments
 - If you fixed a bug that could have been avoided by checking learnings.md, add it!
 
-### 6. Check Git Status DURING Process
+### 7. Check Git Status DURING Process
 ```bash
 git status  # Review what changed
 git diff    # Examine specific changes
 ```
 
-### 7. Stage and Commit
+### 8. Stage and Commit
 ```bash
 git add -A  # Or selectively add files
-git commit -m "checkpoint: <description of changes>"
+git commit -m "descriptive message explaining changes"
 ```
 
-### 8. Push Changes IMMEDIATELY
+**Commit message should:**
+- Explain WHAT changed
+- Explain WHY it changed
+- Reference issue numbers if applicable
+
+### 9. Push Changes IMMEDIATELY
 ```bash
 git push  # CRITICAL: Always push so code can be tested on other systems
 ```
 
-### ⚠️ Common Checkpoint Mistakes to Avoid:
-- **Skipping tests** - Always run tests first
-- **Ignoring clippy warnings** - These often indicate bugs
-- **Forgetting to push** - Changes aren't backed up until pushed
-- **Not updating docs** - Documentation drift causes confusion
-- **Committing without testing** - Breaks CI/CD
+## ⛔ ABSOLUTE PROHIBITIONS
+
+**NEVER do these - they WILL cause problems:**
+
+1. ❌ **NEVER commit without running clippy** - Will fail CI/CD
+2. ❌ **NEVER suppress warnings with `#[allow(...)]`** - Fix the root cause instead
+3. ❌ **NEVER commit untested code** - Tests must pass BEFORE commit
+4. ❌ **NEVER commit unformatted code** - Run `cargo fmt` every time
+5. ❌ **NEVER ignore clippy warnings** - They indicate real bugs
+6. ❌ **NEVER disable warnings in CI config** - Warnings exist for a reason
+7. ❌ **NEVER commit "I'll fix it later"** - Fix it NOW before committing
+
+## ✅ Quality Gate Checklist
+
+Before EVERY commit, verify:
+
+- [ ] `cargo test --all-features` passes (0 failures)
+- [ ] `cargo clippy --all-targets --all-features -- -D warnings` passes (0 warnings)
+- [ ] `cargo fmt --all` has been run
+- [ ] All tests pass
+- [ ] Documentation updated
+- [ ] Git status reviewed
+- [ ] Commit message is descriptive
+- [ ] Ready to push
+
+**If ANY item is unchecked, DO NOT COMMIT.**
+
+## Common Checkpoint Mistakes and How to Avoid Them
+
+### ❌ Mistake: "I'll run clippy after committing"
+**✅ Correct:** Run clippy BEFORE committing. Fix all warnings first.
+
+### ❌ Mistake: "This warning doesn't matter"
+**✅ Correct:** All warnings matter. They catch bugs, inefficiencies, and style issues.
+
+### ❌ Mistake: "I'll add #[allow(unused_imports)] to fix clippy"
+**✅ Correct:** Remove the unused import instead of suppressing the warning.
+
+### ❌ Mistake: "Tests pass locally, that's good enough"
+**✅ Correct:** Also run clippy and fmt. CI will catch you otherwise.
+
+### ❌ Mistake: "I'll format the code tomorrow"
+**✅ Correct:** Run `cargo fmt` NOW. It takes 2 seconds.
 
 ## Common Development Tasks
 

@@ -16,7 +16,11 @@ struct Args {
     #[arg(help = "Path to JSON export file")]
     input: PathBuf,
 
-    #[arg(short, long, help = "Target collection name (default: use name from export)")]
+    #[arg(
+        short,
+        long,
+        help = "Target collection name (default: use name from export)"
+    )]
     collection: Option<String>,
 
     #[arg(long, default_value = "http://localhost:6333", help = "Qdrant URL")]
@@ -171,11 +175,10 @@ fn main() -> Result<()> {
 
     println!("📂 Reading export file: {}", args.input.display());
 
-    let file_contents = fs::read_to_string(&args.input)
-        .context("Failed to read export file")?;
+    let file_contents = fs::read_to_string(&args.input).context("Failed to read export file")?;
 
-    let export_data: ExportData = serde_json::from_str(&file_contents)
-        .context("Failed to parse export JSON")?;
+    let export_data: ExportData =
+        serde_json::from_str(&file_contents).context("Failed to parse export JSON")?;
 
     let collection_name = args
         .collection
@@ -184,7 +187,10 @@ fn main() -> Result<()> {
     println!("✅ Export data loaded:");
     println!("   Version: {}", export_data.version);
     println!("   Exported at: {}", export_data.exported_at);
-    println!("   Original collection: {}", export_data.collection_info.name);
+    println!(
+        "   Original collection: {}",
+        export_data.collection_info.name
+    );
     println!("   Points: {}", export_data.points.len());
 
     // Check if vectors are included
@@ -219,7 +225,10 @@ fn main() -> Result<()> {
         )?;
         println!("✅ Collection created");
     } else if exists {
-        println!("\n⚠️  Collection '{}' exists - merging points", collection_name);
+        println!(
+            "\n⚠️  Collection '{}' exists - merging points",
+            collection_name
+        );
     }
 
     let batch_size = args.batch_size.unwrap_or(100);

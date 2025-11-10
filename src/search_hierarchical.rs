@@ -190,7 +190,11 @@ fn main() -> Result<()> {
                     format!(
                         "=== CONTEXT (Parent Chunk) ===\n{}\n\n=== PRECISE MATCH (Child Chunk) ===\n{}",
                         p.payload.get("text").and_then(|v| v.as_str()).unwrap_or(""),
-                        child.payload.get("text").and_then(|v| v.as_str()).unwrap_or("")
+                        child
+                            .payload
+                            .get("text")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("")
                     )
                 } else {
                     child

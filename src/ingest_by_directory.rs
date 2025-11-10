@@ -357,10 +357,18 @@ fn main() -> Result<()> {
 
     println!();
     println!("{} Next Steps:", "🎯".cyan().bold());
-    println!("   1. Query Rust books:       RAG_COLLECTION=rust-books ./scripts/query-rag.sh \"What is ownership?\"");
-    println!("   2. Query JavaScript books: RAG_COLLECTION=javascript-books ./scripts/query-rag.sh \"Explain promises\"");
-    println!("   3. Query Python books:     RAG_COLLECTION=python-books ./scripts/query-rag.sh \"What are decorators?\"");
-    println!("   4. Query Lisp books:       RAG_COLLECTION=lisp-books ./scripts/query-rag.sh \"What are macros?\"");
+    println!(
+        "   1. Query Rust books:       RAG_COLLECTION=rust-books ./scripts/query-rag.sh \"What is ownership?\""
+    );
+    println!(
+        "   2. Query JavaScript books: RAG_COLLECTION=javascript-books ./scripts/query-rag.sh \"Explain promises\""
+    );
+    println!(
+        "   3. Query Python books:     RAG_COLLECTION=python-books ./scripts/query-rag.sh \"What are decorators?\""
+    );
+    println!(
+        "   4. Query Lisp books:       RAG_COLLECTION=lisp-books ./scripts/query-rag.sh \"What are macros?\""
+    );
     println!();
     println!(
         "   View dashboard: {}",
