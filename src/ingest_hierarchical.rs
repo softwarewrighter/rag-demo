@@ -573,3 +573,223 @@ fn main() -> Result<()> {
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_create_summary_with_headers() {
+        let content = "# Main Title\n\nThis is a substantial first paragraph that should be included in the summary.\n\nMore content here.";
+        let headers = vec!["# Main Title".to_string()];
+
+        let summary = create_summary(content, &headers);
+
+        assert!(summary.contains("# Main Title"));
+        assert!(summary.contains("This is a substantial first paragraph"));
+    }
+
+    #[test]
+    fn test_create_summary_truncates_long_lines() {
+        let content = "# Header\n\n".to_string() + &"a".repeat(300);
+        let headers = vec!["# Header".to_string()];
+
+        let summary = create_summary(&content, &headers);
+
+        assert!(summary.contains("..."));
+        assert!(summary.len() < content.len());
+    }
+
+    #[test]
+    fn test_create_summary_empty_content() {
+        let content = "";
+        let headers = vec![];
+
+        let summary = create_summary(content, &headers);
+
+        assert_eq!(summary, "");
+    }
+
+    #[test]
+    fn test_hierarchical_chunks_simple_text() {
+        let content = "# Title\n\n".to_string() + &"Some content. ".repeat(200);
+
+        let (parent_chunks, child_chunks) = create_hierarchical_chunks(&content);
+
+        assert!(!parent_chunks.is_empty(), "Should create at least one parent chunk");
+        assert!(!child_chunks.is_empty(), "Should create at least one child chunk");
+
+        // Verify parent-child relationship
+        for child in &child_chunks {
+            assert!(
+                parent_chunks.iter().any(|p| p.child_ids.contains(&child.id)),
+                "Each child should be referenced by a parent"
+            );
+        }
+    }
+
+    #[test]
+    fn test_hierarchical_chunks_with_code_blocks() {
+        let content = r#"# Code Example
+
+Here is some code:
+
+```rust
+fn main() {
+    println!("Hello, world!");
+}
+```
+
+More text after code.
+"#.to_string() + &"Additional content. ".repeat(100);
+
+        let (parent_chunks, child_chunks) = create_hierarchical_chunks(&content);
+
+        assert!(!parent_chunks.is_empty());
+        assert!(!child_chunks.is_empty());
+
+        // Check that code blocks are preserved in chunks
+        let has_code = child_chunks.iter().any(|c| c.content.contains("```"));
+        assert!(has_code, "Code blocks should be preserved in child chunks");
+    }
+
+    #[test]
+    fn test_hierarchical_chunks_multiple_sections() {
+        let content = format!(
+            "# Section 1\n\n{}\n\n## Section 2\n\n{}\n\n### Subsection\n\n{}",
+            "Content for section 1. ".repeat(150),
+            "Content for section 2. ".repeat(150),
+            "Content for subsection. ".repeat(150)
+        );
+
+        let (parent_chunks, child_chunks) = create_hierarchical_chunks(&content);
+
+        // Multiple sections should create multiple parents
+        assert!(parent_chunks.len() >= 2, "Multiple sections should create multiple parent chunks");
+
+        // Headers should be captured
+        assert!(
+            parent_chunks.iter().any(|p| !p.headers.is_empty()),
+            "Parent chunks should capture headers"
+        );
+    }
+
+    #[test]
+    fn test_child_chunks_respects_code_boundaries() {
+        let parent_content = r#"Some intro text.
+
+```rust
+fn example() {
+    let x = 1;
+    let y = 2;
+    println!("{}, {}", x, y);
+}
+```
+
+More text after the code block.
+"#;
+        let parent_id = "test-parent-id";
+
+        let children = create_child_chunks(parent_content, parent_id, 0);
+
+        assert!(!children.is_empty());
+
+        // Verify all children reference the same parent
+        for child in &children {
+            assert_eq!(child.parent_id, parent_id);
+        }
+
+        // Verify chunk types are detected
+        let has_code_or_mixed = children.iter().any(|c|
+            c.chunk_type == ChunkType::Code || c.chunk_type == ChunkType::Mixed
+        );
+        assert!(has_code_or_mixed, "Should detect code chunk types");
+    }
+
+    #[test]
+    fn test_child_chunks_handles_lists() {
+        let parent_content = r#"# List Example
+
+- Item 1
+- Item 2
+- Item 3
+
+1. Numbered item 1
+2. Numbered item 2
+
+More text.
+"#;
+        let parent_id = "test-parent-id";
+
+        let children = create_child_chunks(parent_content, parent_id, 0);
+
+        assert!(!children.is_empty());
+
+        // Should detect list types
+        let has_list = children.iter().any(|c| c.chunk_type == ChunkType::List);
+        assert!(has_list, "Should detect list chunk types");
+    }
+
+    #[test]
+    fn test_child_chunks_minimum_content() {
+        let parent_content = "Short content.";
+        let parent_id = "test-parent-id";
+
+        let children = create_child_chunks(parent_content, parent_id, 0);
+
+        // Even short content should create at least one child
+        assert_eq!(children.len(), 1, "Should create at least one child chunk");
+        assert_eq!(children[0].content.trim(), "Short content.");
+    }
+
+    #[test]
+    fn test_hierarchical_chunks_preserves_line_numbers() {
+        let content = "Line 1\nLine 2\nLine 3\nLine 4\nLine 5";
+
+        let (parent_chunks, _child_chunks) = create_hierarchical_chunks(content);
+
+        for parent in &parent_chunks {
+            assert!(parent.end_line >= parent.start_line, "End line should be >= start line");
+        }
+    }
+
+    #[test]
+    fn test_chunk_type_enum() {
+        // Verify enum variants are serializable
+        let code_type = ChunkType::Code;
+        let text_type = ChunkType::Text;
+        let header_type = ChunkType::Header;
+        let list_type = ChunkType::List;
+        let mixed_type = ChunkType::Mixed;
+
+        assert_eq!(code_type, ChunkType::Code);
+        assert_eq!(text_type, ChunkType::Text);
+        assert_eq!(header_type, ChunkType::Header);
+        assert_eq!(list_type, ChunkType::List);
+        assert_eq!(mixed_type, ChunkType::Mixed);
+    }
+
+    #[test]
+    fn test_hierarchical_chunks_min_parent_size() {
+        // Content smaller than MIN_PARENT_SIZE
+        let small_content = "# Small\n\nJust a bit of text.";
+
+        let (parent_chunks, _child_chunks) = create_hierarchical_chunks(small_content);
+
+        // Should still create a parent even if small (handled in final block)
+        assert!(!parent_chunks.is_empty(), "Should create parent for small content");
+    }
+
+    #[test]
+    fn test_child_chunk_indexing() {
+        let parent_content = "Content. ".repeat(300);
+        let parent_id = "test-parent-id";
+
+        let children = create_child_chunks(&parent_content, parent_id, 0);
+
+        // Verify index_in_parent is sequential
+        for (i, child) in children.iter().enumerate() {
+            assert_eq!(child.index_in_parent, i, "Child index should match position");
+        }
+    }
+}

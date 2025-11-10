@@ -277,3 +277,155 @@ fn main() -> Result<()> {
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn test_search_result_deserialization() {
+        let json_data = json!({
+            "id": "test-id-123",
+            "score": 0.95,
+            "payload": {
+                "text": "Test content",
+                "chunk_type": "Text"
+            }
+        });
+
+        let result: SearchResult = serde_json::from_value(json_data).unwrap();
+
+        assert_eq!(result.id, "test-id-123");
+        assert_eq!(result.score, 0.95);
+        assert_eq!(result.payload["text"], "Test content");
+    }
+
+    #[test]
+    fn test_hierarchical_result_structure() {
+        let child = SearchResult {
+            id: "child-1".to_string(),
+            score: 0.9,
+            payload: json!({"text": "Child text", "chunk_type": "Text"}),
+        };
+
+        let parent = SearchResult {
+            id: "parent-1".to_string(),
+            score: 0.85,
+            payload: json!({"text": "Parent text", "chunk_type": "Text"}),
+        };
+
+        let hierarchical = HierarchicalResult {
+            child: child.clone(),
+            parent: Some(parent.clone()),
+            combined_text: "Combined text".to_string(),
+        };
+
+        assert_eq!(hierarchical.child.id, "child-1");
+        assert!(hierarchical.parent.is_some());
+        assert_eq!(hierarchical.combined_text, "Combined text");
+    }
+
+    #[test]
+    fn test_hierarchical_result_without_parent() {
+        let child = SearchResult {
+            id: "child-1".to_string(),
+            score: 0.9,
+            payload: json!({"text": "Child text"}),
+        };
+
+        let hierarchical = HierarchicalResult {
+            child: child.clone(),
+            parent: None,
+            combined_text: "Just child text".to_string(),
+        };
+
+        assert_eq!(hierarchical.child.id, "child-1");
+        assert!(hierarchical.parent.is_none());
+    }
+
+    #[test]
+    fn test_embedding_request_serialization() {
+        let request = EmbeddingRequest {
+            model: "nomic-embed-text".to_string(),
+            prompt: "test query".to_string(),
+        };
+
+        let json = serde_json::to_value(&request).unwrap();
+
+        assert_eq!(json["model"], "nomic-embed-text");
+        assert_eq!(json["prompt"], "test query");
+    }
+
+    #[test]
+    fn test_embedding_response_deserialization() {
+        let json_data = json!({
+            "embedding": [0.1, 0.2, 0.3, 0.4]
+        });
+
+        let response: EmbeddingResponse = serde_json::from_value(json_data).unwrap();
+
+        assert_eq!(response.embedding.len(), 4);
+        assert_eq!(response.embedding[0], 0.1);
+        assert_eq!(response.embedding[3], 0.4);
+    }
+
+    #[test]
+    fn test_search_result_clone() {
+        let result = SearchResult {
+            id: "test-id".to_string(),
+            score: 0.88,
+            payload: json!({"text": "Test"}),
+        };
+
+        let cloned = result.clone();
+
+        assert_eq!(result.id, cloned.id);
+        assert_eq!(result.score, cloned.score);
+    }
+
+    #[test]
+    fn test_qdrant_search_response_deserialization() {
+        let json_data = json!({
+            "result": [
+                {
+                    "id": "id-1",
+                    "score": 0.95,
+                    "payload": {"text": "Result 1"}
+                },
+                {
+                    "id": "id-2",
+                    "score": 0.90,
+                    "payload": {"text": "Result 2"}
+                }
+            ]
+        });
+
+        let response: QdrantSearchResponse = serde_json::from_value(json_data).unwrap();
+
+        assert_eq!(response.result.len(), 2);
+        assert_eq!(response.result[0].id, "id-1");
+        assert_eq!(response.result[1].score, 0.90);
+    }
+
+    #[test]
+    fn test_hierarchical_result_serialization() {
+        let child = SearchResult {
+            id: "child-1".to_string(),
+            score: 0.92,
+            payload: json!({"text": "Child"}),
+        };
+
+        let result = HierarchicalResult {
+            child,
+            parent: None,
+            combined_text: "Text".to_string(),
+        };
+
+        let json = serde_json::to_value(&result).unwrap();
+
+        assert!(json["child"].is_object());
+        assert!(json["parent"].is_null());
+        assert_eq!(json["combined_text"], "Text");
+    }
+}

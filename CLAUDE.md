@@ -22,9 +22,15 @@ cargo build --release
 # Build specific tool
 cargo build --release --bin ingest-hierarchical
 
+# Run tests
+cargo test --all-features
+
 # Run linting/checks
-cargo clippy
+cargo clippy --all-targets --all-features -- -D warnings
 cargo fmt
+
+# Format code
+cargo fmt --all
 ```
 
 ### Dashboard & Demo
@@ -112,6 +118,11 @@ RAG_COLLECTION=javascript-books ./scripts/interactive-rag.sh
 cat .ingested_checksums         # View SHA-256 checksums
 cat .ingestion_stats.json       # View last ingestion stats
 ./scripts/ingestion-status.sh   # Current ingestion status
+
+# Export and import collections (backup/restore)
+./scripts/export-collection.sh python-books --include-vectors --pretty
+./scripts/import-collection.sh exports/python-books.json
+./scripts/import-collection.sh backup.json --collection new-name --force
 ```
 
 ## Architecture & Key Components
@@ -137,15 +148,25 @@ The system uses **hierarchical parent-child chunking** based on research showing
    - Ingests PDFs organized by subdirectory into separate collections
    - Each subdirectory becomes its own collection
 
-4. **ingest-markdown-multi** (`src/ingest_markdown_multi.rs`)
+4. **export-collection** (`src/export_collection.rs`)
+   - Exports Qdrant collections to JSON format
+   - Supports with/without vectors for different use cases
+   - Includes comprehensive unit tests
+
+5. **import-collection** (`src/import_collection.rs`)
+   - Imports collections from JSON backups
+   - Can merge with existing collections or create new ones
+   - Validates vector presence before import
+
+6. **ingest-markdown-multi** (`src/ingest_markdown_multi.rs`)
    - Ingests markdown files into specified collections
    - Supports multi-collection workflows
 
-5. **pdf-to-embeddings** (`src/pdf_to_embeddings.rs`)
+7. **pdf-to-embeddings** (`src/pdf_to_embeddings.rs`)
    - Legacy simple chunking (1000 chars with 200 overlap)
    - Still used by some scripts
 
-6. **ingest-markdown** (`src/ingest_markdown.rs`)
+8. **ingest-markdown** (`src/ingest_markdown.rs`)
    - Smart chunking that preserves code blocks
    - Used after PDF→Markdown conversion
 
@@ -221,6 +242,36 @@ checksum|filepath|chunk_count|timestamp
 ```bash
 curl -s http://localhost:6333/collections/documents | jq '.result.indexed_vectors_count'
 ```
+
+### Run unit tests
+```bash
+# Run all tests
+cargo test --all-features --verbose
+
+# Run tests for specific binary
+cargo test --bin ingest-hierarchical
+
+# Run with output
+cargo test -- --nocapture
+```
+
+## Continuous Integration
+
+The project includes GitHub Actions CI that automatically:
+- Runs all unit tests on push/PR
+- Runs clippy with warnings as errors
+- Checks code formatting
+- Builds all binaries
+- Performs security audits
+- Generates code coverage reports
+
+CI configuration: `.github/workflows/ci.yml`
+
+All Rust binaries now include comprehensive unit tests:
+- `ingest-hierarchical`: 15+ tests for chunking logic
+- `search-hierarchical`: 10+ tests for serialization/deserialization
+- `export-collection`: 4+ tests for data structures
+- `import-collection`: 4+ tests for import validation
 
 ## 🛑 CHECKPOINT PROCESS - MANDATORY
 

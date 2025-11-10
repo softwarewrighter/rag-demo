@@ -1,7 +1,7 @@
 [package]
 name = "rag-demo"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 reqwest = { version = "0.12", features = ["json", "blocking"] }
@@ -12,6 +12,7 @@ uuid = { version = "1.10", features = ["v4", "serde"] }
 clap = { version = "4.4", features = ["derive"] }
 anyhow = "1.0"
 colored = "2.0"
+chrono = { version = "0.4", features = ["serde"] }
 
 [[bin]]
 name = "pdf-to-embeddings"
@@ -40,3 +41,11 @@ path = "src/search_hierarchical.rs"
 [[bin]]
 name = "ingest-by-directory"
 path = "src/ingest_by_directory.rs"
+
+[[bin]]
+name = "export-collection"
+path = "src/export_collection.rs"
+
+[[bin]]
+name = "import-collection"
+path = "src/import_collection.rs"

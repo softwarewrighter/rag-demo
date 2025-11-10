@@ -164,6 +164,8 @@ Additional resources:
 - `qdrant-stats.sh` - Display detailed database statistics and performance
 - `reset-qdrant.sh` - Clear and recreate the collection (requires confirmation)
 - `update-collection-alias.sh` - Add descriptive aliases to existing collections (optional)
+- `export-collection.sh` - Export collection to JSON for backup or sharing
+- `import-collection.sh` - Import collection from JSON backup file
 
 ### Ingestion Scripts
 - `ingest-pdf-smart.sh` - Smart PDF ingestion via Markdown conversion with hierarchical chunking
@@ -202,6 +204,10 @@ The project includes several Rust CLI tools:
 - **search-hierarchical** - Searches with parent context awareness
 - **ingest-by-directory** - Processes directories of PDFs into separate collections
 
+### Collection Management
+- **export-collection** - Export collections to JSON with optional vectors
+- **import-collection** - Import collections from JSON backups
+
 ### Alternative Strategies
 - **ingest-markdown** - Smart chunking that preserves code blocks
 - **ingest-markdown-multi** - Multi-scale chunking at different sizes
@@ -211,6 +217,9 @@ The project includes several Rust CLI tools:
 Build with:
 ```bash
 cargo build --release
+
+# Or build specific binary
+cargo build --release --bin export-collection
 ```
 
 ## Using Different LLMs
@@ -280,6 +289,32 @@ The setup script creates this mount automatically:
 ```bash
 docker run -v $(pwd)/qdrant_storage:/qdrant/storage qdrant/qdrant
 ```
+
+### Backup and Restore Collections
+
+Export collections to JSON for backup, sharing, or migration:
+
+```bash
+# Export collection (payload only, smaller file)
+./scripts/export-collection.sh python-books
+
+# Export with vectors (required for restore)
+./scripts/export-collection.sh python-books --include-vectors --pretty
+
+# Custom output location
+./scripts/export-collection.sh rust-books -o backups/rust-backup.json --include-vectors
+
+# Import to restore or migrate
+./scripts/import-collection.sh exports/python-books.json
+
+# Import to different collection name
+./scripts/import-collection.sh exports/python-books.json --collection python-docs
+
+# Force merge with existing collection
+./scripts/import-collection.sh backup.json --force
+```
+
+**Note**: Exports without `--include-vectors` are suitable for inspection only. Imports require vectors to be present in the export file.
 
 ## Performance & Indexing
 
