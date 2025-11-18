@@ -388,6 +388,144 @@ all_points.len().div_ceil(batch_size)
 - Use shorthand field initialization when field name matches variable
 - Use built-in math methods like div_ceil() instead of manual implementations
 
+## GitHub Wiki Documentation Errors
+
+### 2025-11-17: Three Classes of Wiki Link Errors
+
+**Background**: Claude AI agents have been generating GitHub Wiki documentation with systematic errors that break links and diagrams. This section documents the three error patterns discovered across 14 repositories.
+
+#### Error 1: Bad Internal Wiki Links (248 instances)
+
+**Problem**: Internal wiki links incorrectly include `.md` extension
+```markdown
+❌ WRONG: [Architecture](Architecture.md)
+✅ CORRECT: [Architecture](Architecture)
+```
+
+**Why This Matters**:
+- GitHub Wiki interprets `Architecture.md` as a link to the raw markdown file
+- Renders as plain text instead of formatted wiki page
+- Breaks navigation between wiki pages
+
+**Root Cause**: Confusion between:
+- Wiki-to-wiki links (no extension)
+- Repo file links (need full GitHub URL with extension)
+
+**Prevention**:
+- Internal wiki links NEVER have `.md` extension
+- Only use bare page names: `[Page Title](Page-Name)`
+- GitHub Wiki automatically handles the extension
+
+#### Error 2: Broken Mermaid Diagrams (1,481 instances)
+
+**Problem**: `<br/>` HTML tags used inside Mermaid diagram blocks
+```mermaid
+❌ WRONG:
+participant Nginx as Nginx<br/>(Port 80)
+
+✅ CORRECT:
+participant Nginx as Nginx (Port 80)
+```
+
+**Why This Matters**:
+- Mermaid doesn't support HTML tags
+- Diagrams fail to render entirely
+- Shows raw source code instead of diagram
+
+**Prevention**:
+- NEVER use HTML tags inside Mermaid code blocks
+- Use plain text with parentheses for line breaks
+- Mermaid has its own syntax for formatting
+
+#### Error 3: Wiki-to-Repo File Links (51 instances)
+
+**Problem**: Relative paths to repository files don't work in GitHub Wiki
+```markdown
+❌ WRONG: [Design Doc](../docs/design.md)
+✅ CORRECT: [Design Doc](https://github.com/owner/repo/blob/main/docs/design.md)
+```
+
+**Why This Matters**:
+- GitHub Wiki pages are served from separate `.wiki.git` repository
+- Relative paths like `../docs/` resolve relative to wiki repo, not main repo
+- Links to repository files break completely
+
+**Root Cause**: GitHub's wiki architecture
+- Main repo: `github.com/owner/repo`
+- Wiki repo: `github.com/owner/repo.wiki.git`
+- Relative paths don't cross repository boundaries
+
+**Prevention**:
+- Wiki-to-repo file links MUST use full GitHub URLs
+- Format: `https://github.com/owner/repo/blob/main/path/to/file.md`
+- Includes `/blob/main/` path component
+- Preserves `.md` extension for repository files
+
+#### Distinguishing Link Types
+
+When creating GitHub Wiki documentation:
+
+1. **Wiki-to-Wiki** (internal wiki navigation):
+   - Format: `[Page](Page-Name)`
+   - NO `.md` extension
+   - Example: `[Architecture](Architecture)`
+
+2. **Wiki-to-Repo** (links to repository files):
+   - Format: `[File](https://github.com/owner/repo/blob/main/path/file.md)`
+   - Full GitHub URL required
+   - Includes `/blob/main/`
+   - Keeps `.md` extension
+   - Example: `[README](https://github.com/owner/repo/blob/main/README.md)`
+
+3. **External Links** (other websites):
+   - Format: `[Site](https://example.com)`
+   - Standard markdown links
+   - No special handling
+
+#### Detection and Fixing
+
+**Scripts Created**:
+- `check-wiki-errors.sh` - Detects all three error types
+- `fix-wiki-errors.sh` - Fixes mermaid and wiki-to-wiki links
+- `find-repo-links.sh` - Identifies wiki-to-repo links needing full URLs
+- `fix-repo-links.sh` - Converts relative repo links to full GitHub URLs
+
+**Key Technique**: Wiki page inventory
+- Build list of wiki page names (without `.md`)
+- Use to distinguish wiki pages from repo files
+- Only convert non-wiki links to full URLs
+
+**Impact**:
+- Fixed 1,729 errors across 14 repositories
+- 248 bad wiki links
+- 1,481 mermaid `<br/>` tags
+- 51 wiki-to-repo relative links
+
+#### Proactive Prevention
+
+When generating GitHub Wiki documentation:
+
+1. **NEVER** add `.md` to internal wiki links
+2. **NEVER** use HTML tags in Mermaid diagrams
+3. **ALWAYS** use full GitHub URLs for repository files
+4. **VERIFY** link syntax before committing wiki pages
+5. **TEST** links work correctly on actual GitHub Wiki
+
+**Checklist for Wiki Documentation**:
+```bash
+# Check for errors before pushing wiki changes
+./check-wiki-errors.sh
+
+# Fix errors if found
+./fix-wiki-errors.sh --dry-run  # Preview
+./fix-wiki-errors.sh            # Apply
+
+# Check for repo file links
+./find-repo-links.sh
+./fix-repo-links.sh --dry-run   # Preview
+./fix-repo-links.sh             # Apply
+```
+
 ## Continuous Improvement
 
 Each time a new pattern of issue is discovered:
