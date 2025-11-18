@@ -1,6 +1,6 @@
 # Database Schema
 
-> **Copyright © 2025 Michael A. Wright** | Licensed under the [MIT License](../LICENSE)
+> **Copyright © 2025 Michael A. Wright** | Licensed under the [MIT License](https://github.com/softwarewrighter/rag-demo/blob/main/LICENSE)
 
 ## Table of Contents
 - [Qdrant Overview](#qdrant-overview)

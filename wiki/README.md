@@ -1,6 +1,6 @@
 # RAG Demo Wiki
 
-> **Copyright © 2025 Michael A. Wright** | Licensed under the [MIT License](../LICENSE)
+> **Copyright © 2025 Michael A. Wright** | Licensed under the [MIT License](https://github.com/softwarewrighter/rag-demo/blob/main/LICENSE)
 
 ## About This Wiki
 
@@ -137,7 +137,7 @@ mmdc -i Architecture-Overview.md -o architecture.pdf
 ```markdown
 # Page Title
 
-> **Copyright © 2025 Michael A. Wright** | Licensed under the [MIT License](../LICENSE)
+> **Copyright © 2025 Michael A. Wright** | Licensed under the [MIT License](https://github.com/softwarewrighter/rag-demo/blob/main/LICENSE)
 
 ## Table of Contents
 - [Section 1](#section-1)
@@ -233,11 +233,11 @@ mkdocs serve
 ## Additional Resources
 
 ### Main Project Documentation
-- [README.md](../README.md) - User-facing documentation
-- [CLAUDE.md](../CLAUDE.md) - Development guide
-- [Quick Start](../documentation/quick-start.md) - Setup walkthrough
-- [Usage Examples](../documentation/usage-examples.md) - Real-world scenarios
-- [Research](../documentation/research.md) - Background research
+- [README.md](https://github.com/softwarewrighter/rag-demo/blob/main/README.md) - User-facing documentation
+- [CLAUDE.md](https://github.com/softwarewrighter/rag-demo/blob/main/CLAUDE.md) - Development guide
+- [Quick Start](https://github.com/softwarewrighter/rag-demo/blob/main/documentation/quick-start.md) - Setup walkthrough
+- [Usage Examples](https://github.com/softwarewrighter/rag-demo/blob/main/documentation/usage-examples.md) - Real-world scenarios
+- [Research](https://github.com/softwarewrighter/rag-demo/blob/main/documentation/research.md) - Background research
 
 ### External Resources
 - [Qdrant Documentation](https://qdrant.tech/documentation/)
@@ -296,8 +296,8 @@ This wiki should be updated when:
 
 For questions about this documentation:
 - Open an issue on GitHub
-- Review [CLAUDE.md](../CLAUDE.md) for development guide
-- Check [Learnings](../documentation/learnings.md) for common issues
+- Review [CLAUDE.md](https://github.com/softwarewrighter/rag-demo/blob/main/CLAUDE.md) for development guide
+- Check [Learnings](https://github.com/softwarewrighter/rag-demo/blob/main/documentation/learnings.md) for common issues
 
 ---
 

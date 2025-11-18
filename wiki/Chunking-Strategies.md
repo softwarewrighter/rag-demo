@@ -1,6 +1,6 @@
 # Chunking Strategies
 
-> **Copyright © 2025 Michael A. Wright** | Licensed under the [MIT License](../LICENSE)
+> **Copyright © 2025 Michael A. Wright** | Licensed under the [MIT License](https://github.com/softwarewrighter/rag-demo/blob/main/LICENSE)
 
 ## Table of Contents
 - [Overview](#overview)
@@ -44,7 +44,7 @@ graph TD
 
 ### 2024 Chroma Research Study
 
-Comprehensive empirical evaluation using token-level precision, recall, and IoU metrics ([source](../documentation/research.md)):
+Comprehensive empirical evaluation using token-level precision, recall, and IoU metrics ([source](https://github.com/softwarewrighter/rag-demo/blob/main/documentation/research.md)):
 
 **Key Findings**:
 - **ClusterSemanticChunker (400 tokens)**: 0.913 recall, strong precision
@@ -508,7 +508,7 @@ curl -s http://localhost:6333/collections/documents/points/scroll \
 
 ## Related Documentation
 
-- [Research Background](../documentation/research.md) - Full research analysis
+- [Research Background](https://github.com/softwarewrighter/rag-demo/blob/main/documentation/research.md) - Full research analysis
 - [Architecture Overview](Architecture-Overview) - System design
 - [Rust Components](Rust-Components) - Implementation details
 - [Data Flow Diagrams](Data-Flow-Diagrams) - Processing flows

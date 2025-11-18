@@ -1,6 +1,6 @@
 # Rust Components
 
-> **Copyright © 2025 Michael A. Wright** | Licensed under the [MIT License](../LICENSE)
+> **Copyright © 2025 Michael A. Wright** | Licensed under the [MIT License](https://github.com/softwarewrighter/rag-demo/blob/main/LICENSE)
 
 ## Table of Contents
 - [Component Overview](#component-overview)
@@ -727,7 +727,7 @@ Automated testing on every push via GitHub Actions:
 - [Data Flow Diagrams](Data-Flow-Diagrams) - Sequence diagrams
 - [Database Schema](Database-Schema) - Qdrant structure
 - [Chunking Strategies](Chunking-Strategies) - Research and implementation
-- [Testing Guide](../CLAUDE.md#testing--validation) - Quality gates
+- [Testing Guide](https://github.com/softwarewrighter/rag-demo/blob/main/CLAUDE.md#testing--validation) - Quality gates
 
 ---
 

@@ -1,6 +1,6 @@
 # RAG Demo - Architecture Documentation
 
-> **Copyright © 2025 Michael A. Wright** | Licensed under the [MIT License](../LICENSE)
+> **Copyright © 2025 Michael A. Wright** | Licensed under the [MIT License](https://github.com/softwarewrighter/rag-demo/blob/main/LICENSE)
 
 Welcome to the RAG Demo architecture documentation wiki! This wiki provides comprehensive technical documentation about the system architecture, components, data flows, and design decisions.
 
@@ -88,21 +88,21 @@ If you're new to the system:
 
 ## 📖 Additional Resources
 
-- [Main README](../README.md) - User-facing documentation and quick start
-- [CLAUDE.md](../CLAUDE.md) - Development guide for contributors
-- [Quick Start Guide](../documentation/quick-start.md) - Step-by-step walkthrough
-- [Usage Examples](../documentation/usage-examples.md) - Real-world scenarios
-- [Learnings](../documentation/learnings.md) - Common issues and solutions
+- [Main README](https://github.com/softwarewrighter/rag-demo/blob/main/README.md) - User-facing documentation and quick start
+- [CLAUDE.md](https://github.com/softwarewrighter/rag-demo/blob/main/CLAUDE.md) - Development guide for contributors
+- [Quick Start Guide](https://github.com/softwarewrighter/rag-demo/blob/main/documentation/quick-start.md) - Step-by-step walkthrough
+- [Usage Examples](https://github.com/softwarewrighter/rag-demo/blob/main/documentation/usage-examples.md) - Real-world scenarios
+- [Learnings](https://github.com/softwarewrighter/rag-demo/blob/main/documentation/learnings.md) - Common issues and solutions
 
 ## 🤝 Contributing
 
 When contributing to the system:
 
-1. Consult [CLAUDE.md](../CLAUDE.md) for development guidelines
-2. Review [Learnings](../documentation/learnings.md) to avoid known issues
+1. Consult [CLAUDE.md](https://github.com/softwarewrighter/rag-demo/blob/main/CLAUDE.md) for development guidelines
+2. Review [Learnings](https://github.com/softwarewrighter/rag-demo/blob/main/documentation/learnings.md) to avoid known issues
 3. Follow the checkpoint process for code quality
 4. Update architecture documentation when making significant changes
 
 ---
 
-**Note**: This wiki documents the system as implemented. For research background and design decisions, see [Research](../documentation/research.md).
+**Note**: This wiki documents the system as implemented. For research background and design decisions, see [Research](https://github.com/softwarewrighter/rag-demo/blob/main/documentation/research.md).

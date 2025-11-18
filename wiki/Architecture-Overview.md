@@ -1,6 +1,6 @@
 # Architecture Overview
 
-> **Copyright © 2025 Michael A. Wright** | Licensed under the [MIT License](../LICENSE)
+> **Copyright © 2025 Michael A. Wright** | Licensed under the [MIT License](https://github.com/softwarewrighter/rag-demo/blob/main/LICENSE)
 
 ## Table of Contents
 - [System Architecture](#system-architecture)
@@ -178,7 +178,7 @@ All processing, storage, and inference happen locally:
 - Network-independent operation
 
 ### 2. Hierarchical Chunking
-Based on [research](../documentation/research.md) showing superior retrieval:
+Based on [research](https://github.com/softwarewrighter/rag-demo/blob/main/documentation/research.md) showing superior retrieval:
 - **Parent chunks**: ~3500 chars (full context)
 - **Child chunks**: ~750 chars (precise matching)
 - Search returns children, retrieves parents when needed
@@ -259,7 +259,7 @@ Optimized for sub-100ms query latency:
 ### Decision 3: Hierarchical Chunking
 **Alternatives Considered**: Fixed-size, sliding window, multi-collection
 
-**Rationale** (from [research](../documentation/research.md)):
+**Rationale** (from [research](https://github.com/softwarewrighter/rag-demo/blob/main/documentation/research.md)):
 - Research shows 8.2% improvement over fixed-size
 - Preserves document structure
 - Balances precision and context

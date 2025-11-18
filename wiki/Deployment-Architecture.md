@@ -1,6 +1,6 @@
 # Deployment Architecture
 
-> **Copyright © 2025 Michael A. Wright** | Licensed under the [MIT License](../LICENSE)
+> **Copyright © 2025 Michael A. Wright** | Licensed under the [MIT License](https://github.com/softwarewrighter/rag-demo/blob/main/LICENSE)
 
 ## Table of Contents
 - [System Deployment Overview](#system-deployment-overview)
@@ -677,7 +677,7 @@ flowchart TD
 - [Database Schema](Database-Schema) - Qdrant configuration and storage
 - [Rust Components](Rust-Components) - Binary details
 - [Data Flow Diagrams](Data-Flow-Diagrams) - Process flows
-- [Quick Start Guide](../documentation/quick-start.md) - Setup walkthrough
+- [Quick Start Guide](https://github.com/softwarewrighter/rag-demo/blob/main/documentation/quick-start.md) - Setup walkthrough
 
 ---
 
