@@ -25,15 +25,15 @@ This document explains the research-backed hierarchical chunking approach used i
 
 ```mermaid
 graph TD
-    Doc[Original Document<br/>10,000 chars] --> Problem{How to chunk?}
+    Doc[Original Document 10,000 chars] --> Problem{How to chunk?}
 
-    Problem --> Too[Too Small<br/>200 chars]
-    Problem --> Just[Just Right<br/>750 child + 3500 parent]
-    Problem --> Big[Too Large<br/>5000 chars]
+    Problem --> Too[Too Small 200 chars]
+    Problem --> Just[Just Right 750 child + 3500 parent]
+    Problem --> Big[Too Large 5000 chars]
 
-    Too --> L1[❌ Lost context<br/>❌ Fragmented ideas<br/>❌ Code split mid-block]
-    Just --> L2[✅ Precise matching<br/>✅ Full context available<br/>✅ Preserves structure]
-    Big --> L3[❌ Imprecise retrieval<br/>❌ Too much noise<br/>❌ Token waste]
+    Too --> L1[❌ Lost context ❌ Fragmented ideas ❌ Code split mid-block]
+    Just --> L2[✅ Precise matching ✅ Full context available ✅ Preserves structure]
+    Big --> L3[❌ Imprecise retrieval ❌ Too much noise ❌ Token waste]
 
     style Just fill:#2ecc71
     style Too fill:#e74c3c
@@ -75,19 +75,19 @@ Studies show hierarchical approaches provide:
 
 ```mermaid
 flowchart TB
-    Doc[Document: 10,000 chars] --> Split1[Split into Parents<br/>~3500 chars each]
+    Doc[Document: 10,000 chars] --> Split1[Split into Parents ~3500 chars each]
 
-    Split1 --> P1[Parent 1: 3,500 chars<br/>Context: Full section]
-    Split1 --> P2[Parent 2: 3,500 chars<br/>Context: Full section]
-    Split1 --> P3[Parent 3: 3,500 chars<br/>Context: Full section]
+    Split1 --> P1[Parent 1: 3,500 chars Context: Full section]
+    Split1 --> P2[Parent 2: 3,500 chars Context: Full section]
+    Split1 --> P3[Parent 3: 3,500 chars Context: Full section]
 
-    P1 --> Split2A[Split into Children<br/>~750 chars each]
-    P2 --> Split2B[Split into Children<br/>~750 chars each]
+    P1 --> Split2A[Split into Children ~750 chars each]
+    P2 --> Split2B[Split into Children ~750 chars each]
 
-    Split2A --> C1[Child 1.1<br/>750 chars<br/>~400 tokens]
-    Split2A --> C2[Child 1.2<br/>750 chars<br/>~400 tokens]
-    Split2A --> C3[Child 1.3<br/>750 chars<br/>~400 tokens]
-    Split2A --> C4[Child 1.4<br/>750 chars<br/>~400 tokens]
+    Split2A --> C1[Child 1.1 750 chars ~400 tokens]
+    Split2A --> C2[Child 1.2 750 chars ~400 tokens]
+    Split2A --> C3[Child 1.3 750 chars ~400 tokens]
+    Split2A --> C4[Child 1.4 750 chars ~400 tokens]
 
     Split2B --> C5[Child 2.1]
     Split2B --> C6[Child 2.2]
@@ -147,7 +147,7 @@ sequenceDiagram
         Qdrant-->>System: Full parent contexts
     end
 
-    System->>System: Assemble context:<br/>Children (precise) + Parents (context)
+    System->>System: Assemble context: Children (precise) + Parents (context)
     System->>LLM: Generate answer with assembled context
     LLM-->>System: Response
     System-->>User: Answer with citations
@@ -285,9 +285,9 @@ fn chunk_with_code_awareness(text: &str, target: usize) -> Vec<String> {
 
 ```mermaid
 flowchart LR
-    Doc[Document] --> C1[Chunk 1<br/>1000 chars]
-    C1 --> C2[Chunk 2<br/>800 new + 200 overlap]
-    C2 --> C3[Chunk 3<br/>800 new + 200 overlap]
+    Doc[Document] --> C1[Chunk 1 1000 chars]
+    C1 --> C2[Chunk 2 800 new + 200 overlap]
+    C2 --> C3[Chunk 3 800 new + 200 overlap]
     C3 --> CN[Chunk N]
 
     style C1 fill:#95a5a6
@@ -362,9 +362,9 @@ fn chunk_markdown(text: &str) -> Vec<Chunk> {
 
 ```mermaid
 graph TB
-    Doc[Document] --> Small[Small Collection<br/>500 char chunks]
-    Doc --> Medium[Medium Collection<br/>2000 char chunks]
-    Doc --> Large[Large Collection<br/>4000 char chunks]
+    Doc[Document] --> Small[Small Collection 500 char chunks]
+    Doc --> Medium[Medium Collection 2000 char chunks]
+    Doc --> Large[Large Collection 4000 char chunks]
 
     Query[User Query] --> Small
     Query --> Medium
@@ -509,12 +509,12 @@ curl -s http://localhost:6333/collections/documents/points/scroll \
 ## Related Documentation
 
 - [Research Background](../documentation/research.md) - Full research analysis
-- [Architecture Overview](Architecture-Overview.md) - System design
-- [Rust Components](Rust-Components.md) - Implementation details
-- [Data Flow Diagrams](Data-Flow-Diagrams.md) - Processing flows
-- [Database Schema](Database-Schema.md) - Storage structure
+- [Architecture Overview](Architecture-Overview) - System design
+- [Rust Components](Rust-Components) - Implementation details
+- [Data Flow Diagrams](Data-Flow-Diagrams) - Processing flows
+- [Database Schema](Database-Schema) - Storage structure
 
 ---
 
 **Last Updated**: 2025-11-17
-**Related**: [Home](Home.md) | [Architecture](Architecture-Overview.md) | [Components](Rust-Components.md)
+**Related**: [Home](Home) | [Architecture](Architecture-Overview) | [Components](Rust-Components)

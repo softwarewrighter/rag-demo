@@ -54,15 +54,15 @@ wiki/
 
 ```mermaid
 graph TB
-    Home[Home.md<br/>Start Here]
+    Home[Home.md Start Here]
 
-    Home --> Arch[Architecture-Overview.md<br/>System Design]
-    Home --> Flow[Data-Flow-Diagrams.md<br/>Operations]
-    Home --> Comp[Rust-Components.md<br/>Implementation]
+    Home --> Arch[Architecture-Overview.md System Design]
+    Home --> Flow[Data-Flow-Diagrams.md Operations]
+    Home --> Comp[Rust-Components.md Implementation]
 
-    Arch --> DB[Database-Schema.md<br/>Data Model]
-    Arch --> Deploy[Deployment-Architecture.md<br/>Infrastructure]
-    Arch --> Chunk[Chunking-Strategies.md<br/>Research]
+    Arch --> DB[Database-Schema.md Data Model]
+    Arch --> Deploy[Deployment-Architecture.md Infrastructure]
+    Arch --> Chunk[Chunking-Strategies.md Research]
 
     style Home fill:#e74c3c
     style Arch fill:#3498db
@@ -99,22 +99,22 @@ mmdc -i Architecture-Overview.md -o architecture.pdf
 ## Quick Navigation
 
 ### For New Developers
-1. Start: [Home.md](Home.md)
-2. Understand: [Architecture-Overview.md](Architecture-Overview.md)
-3. Explore: [Rust-Components.md](Rust-Components.md)
-4. Deep Dive: [Chunking-Strategies.md](Chunking-Strategies.md)
+1. Start: [Home.md](Home)
+2. Understand: [Architecture-Overview.md](Architecture-Overview)
+3. Explore: [Rust-Components.md](Rust-Components)
+4. Deep Dive: [Chunking-Strategies.md](Chunking-Strategies)
 
 ### For DevOps/SRE
-1. Start: [Home.md](Home.md)
-2. Setup: [Deployment-Architecture.md](Deployment-Architecture.md)
-3. Data: [Database-Schema.md](Database-Schema.md)
-4. Operations: [Data-Flow-Diagrams.md](Data-Flow-Diagrams.md)
+1. Start: [Home.md](Home)
+2. Setup: [Deployment-Architecture.md](Deployment-Architecture)
+3. Data: [Database-Schema.md](Database-Schema)
+4. Operations: [Data-Flow-Diagrams.md](Data-Flow-Diagrams)
 
 ### For Data Scientists
-1. Start: [Home.md](Home.md)
-2. Research: [Chunking-Strategies.md](Chunking-Strategies.md)
-3. Architecture: [Architecture-Overview.md](Architecture-Overview.md)
-4. Implementation: [Rust-Components.md](Rust-Components.md)
+1. Start: [Home.md](Home)
+2. Research: [Chunking-Strategies.md](Chunking-Strategies)
+3. Architecture: [Architecture-Overview.md](Architecture-Overview)
+4. Implementation: [Rust-Components.md](Rust-Components)
 
 ## Contributing to This Wiki
 
@@ -149,12 +149,12 @@ Content...
 
 ## Related Documentation
 
-- [Other Page](Other-Page.md)
+- [Other Page](Other-Page)
 
 ---
 
 **Last Updated**: YYYY-MM-DD
-**Related**: [Home](Home.md) | [Other](Other-Page.md)
+**Related**: [Home](Home) | [Other](Other-Page)
 ```
 
 **Diagrams**:
@@ -262,7 +262,7 @@ mkdocs serve
 
 **Solution**:
 - Ensure filenames match exactly (case-sensitive)
-- Use relative paths: `[Link](Other-Page.md)`
+- Use relative paths: `[Link](Other-Page)`
 - For sections: `[Link](Page.md#section-name)`
 
 ### Images Not Loading

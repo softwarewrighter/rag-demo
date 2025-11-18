@@ -71,20 +71,20 @@ graph TB
 ```mermaid
 graph LR
     subgraph "Rust Binaries"
-        IH[ingest-hierarchical<br/>Parent-Child Chunking]
-        SH[search-hierarchical<br/>Context-Aware Search]
-        HS[hybrid-search<br/>Vector + Keyword]
-        IBD[ingest-by-directory<br/>Multi-Collection]
-        EXP[export-collection<br/>Backup]
-        IMP[import-collection<br/>Restore]
-        IM[ingest-markdown<br/>Code Preservation]
-        IMM[ingest-markdown-multi<br/>Multi-Scale]
-        P2E[pdf-to-embeddings<br/>Legacy Simple]
-        SQ[search-qdrant<br/>Basic Search]
+        IH[ingest-hierarchical Parent-Child Chunking]
+        SH[search-hierarchical Context-Aware Search]
+        HS[hybrid-search Vector + Keyword]
+        IBD[ingest-by-directory Multi-Collection]
+        EXP[export-collection Backup]
+        IMP[import-collection Restore]
+        IM[ingest-markdown Code Preservation]
+        IMM[ingest-markdown-multi Multi-Scale]
+        P2E[pdf-to-embeddings Legacy Simple]
+        SQ[search-qdrant Basic Search]
     end
 
     subgraph "Core Library"
-        LIB[lib.rs<br/>Shared Functions<br/>- Ollama Client<br/>- Qdrant Client<br/>- Chunking Utils]
+        LIB[lib.rs Shared Functions - Ollama Client - Qdrant Client - Chunking Utils]
     end
 
     IH --> LIB
@@ -387,13 +387,13 @@ Optimized for sub-100ms query latency:
 
 ## Related Documentation
 
-- [Data Flow Diagrams](Data-Flow-Diagrams.md) - Sequence diagrams for operations
-- [Rust Components](Rust-Components.md) - Detailed component documentation
-- [Database Schema](Database-Schema.md) - Qdrant collection structure
-- [Deployment Architecture](Deployment-Architecture.md) - Infrastructure and deployment
-- [Chunking Strategies](Chunking-Strategies.md) - Research and implementation details
+- [Data Flow Diagrams](Data-Flow-Diagrams) - Sequence diagrams for operations
+- [Rust Components](Rust-Components) - Detailed component documentation
+- [Database Schema](Database-Schema) - Qdrant collection structure
+- [Deployment Architecture](Deployment-Architecture) - Infrastructure and deployment
+- [Chunking Strategies](Chunking-Strategies) - Research and implementation details
 
 ---
 
 **Last Updated**: 2025-11-17
-**Related**: [Home](Home.md) | [Data Flow](Data-Flow-Diagrams.md) | [Components](Rust-Components.md)
+**Related**: [Home](Home) | [Data Flow](Data-Flow-Diagrams) | [Components](Rust-Components)

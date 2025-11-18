@@ -22,19 +22,19 @@ The RAG Demo system is designed for **local-first deployment** with all componen
 graph TB
     subgraph "Host Machine localhost"
         subgraph "Docker Container"
-            QD[Qdrant<br/>:6333 REST<br/>:6334 gRPC]
-            QV[Volume Mount<br/>./qdrant_storage/]
+            QD[Qdrant :6333 REST :6334 gRPC]
+            QV[Volume Mount ./qdrant_storage/]
         end
 
         subgraph "Native Processes"
-            OL[Ollama<br/>:11434 HTTP]
-            RUST[Rust Binaries<br/>./target/release/]
-            DASH[Dashboard<br/>./dashboard-dist/]
+            OL[Ollama :11434 HTTP]
+            RUST[Rust Binaries ./target/release/]
+            DASH[Dashboard ./dashboard-dist/]
         end
 
         subgraph "User Interfaces"
-            CLI[Bash Scripts<br/>./scripts/]
-            WEB[Web Browser<br/>:8080]
+            CLI[Bash Scripts ./scripts/]
+            WEB[Web Browser :8080]
         end
     end
 
@@ -221,7 +221,7 @@ server {
 ```mermaid
 graph LR
     Browser[Web Browser] --> HTTP[HTTP :8080]
-    HTTP --> Static[Static Files<br/>dashboard-dist/]
+    HTTP --> Static[Static Files dashboard-dist/]
     Static --> JS[JavaScript]
     JS --> QD[Qdrant :6333]
     JS --> OL[Ollama :11434]
@@ -339,19 +339,19 @@ rag-demo/
 ```mermaid
 flowchart TB
     subgraph "Critical Data (Backup)"
-        PDF[Source PDFs<br/>./ingest/]
-        QD[Qdrant Storage<br/>./qdrant_storage/]
-        CHK[Checksums<br/>.ingested_checksums]
+        PDF[Source PDFs ./ingest/]
+        QD[Qdrant Storage ./qdrant_storage/]
+        CHK[Checksums .ingested_checksums]
     end
 
     subgraph "Recoverable Data (Optional Backup)"
-        EXTR[Markdown Extracts<br/>./extracted/]
-        STATS[Stats<br/>.ingestion_stats.json]
+        EXTR[Markdown Extracts ./extracted/]
+        STATS[Stats .ingestion_stats.json]
     end
 
     subgraph "Rebuild from Source (No Backup)"
-        BIN[Rust Binaries<br/>./target/release/]
-        DASH[Dashboard<br/>./dashboard-dist/]
+        BIN[Rust Binaries ./target/release/]
+        DASH[Dashboard ./dashboard-dist/]
     end
 
     PDF --> BACKUP[Backup Storage]
@@ -535,9 +535,9 @@ graph TB
 graph TB
     Q[Single Query] --> R{Route by topic}
 
-    R --> C1[python-books<br/>Collection]
-    R --> C2[javascript-books<br/>Collection]
-    R --> C3[rust-books<br/>Collection]
+    R --> C1[python-books Collection]
+    R --> C2[javascript-books Collection]
+    R --> C3[rust-books Collection]
 
     C1 --> I1[Independent Index]
     C2 --> I2[Independent Index]
@@ -612,19 +612,19 @@ curl -s http://localhost:6333/collections | jq -r '.result.collections[].name'
 ```mermaid
 graph TB
     subgraph "System Metrics"
-        CPU[CPU Usage<br/>htop, Activity Monitor]
-        MEM[Memory Usage<br/>free -h, Activity Monitor]
-        DISK[Disk Usage<br/>df -h]
+        CPU[CPU Usage htop, Activity Monitor]
+        MEM[Memory Usage free -h, Activity Monitor]
+        DISK[Disk Usage df -h]
     end
 
     subgraph "Service Metrics"
-        QM[Qdrant Metrics<br/>:6333/metrics]
-        OM[Ollama Logs<br/>~/.ollama/logs/]
+        QM[Qdrant Metrics :6333/metrics]
+        OM[Ollama Logs ~/.ollama/logs/]
     end
 
     subgraph "Application Metrics"
-        QT[Query Latency<br/>Built into scripts]
-        IC[Ingestion Count<br/>.ingestion_stats.json]
+        QT[Query Latency Built into scripts]
+        IC[Ingestion Count .ingestion_stats.json]
     end
 
     CPU --> Alert{Threshold?}
@@ -673,13 +673,13 @@ flowchart TD
 
 ## Related Documentation
 
-- [Architecture Overview](Architecture-Overview.md) - System design principles
-- [Database Schema](Database-Schema.md) - Qdrant configuration and storage
-- [Rust Components](Rust-Components.md) - Binary details
-- [Data Flow Diagrams](Data-Flow-Diagrams.md) - Process flows
+- [Architecture Overview](Architecture-Overview) - System design principles
+- [Database Schema](Database-Schema) - Qdrant configuration and storage
+- [Rust Components](Rust-Components) - Binary details
+- [Data Flow Diagrams](Data-Flow-Diagrams) - Process flows
 - [Quick Start Guide](../documentation/quick-start.md) - Setup walkthrough
 
 ---
 
 **Last Updated**: 2025-11-17
-**Related**: [Home](Home.md) | [Architecture](Architecture-Overview.md) | [Database](Database-Schema.md)
+**Related**: [Home](Home) | [Architecture](Architecture-Overview) | [Database](Database-Schema)

@@ -7,36 +7,36 @@ Welcome to the RAG Demo architecture documentation wiki! This wiki provides comp
 ## 📚 Documentation Index
 
 ### Core Architecture
-- **[Architecture Overview](Architecture-Overview.md)** - High-level system architecture, component diagram, and design principles
-- **[Data Flow Diagrams](Data-Flow-Diagrams.md)** - Sequence diagrams for ingestion, query, and search operations
-- **[Deployment Architecture](Deployment-Architecture.md)** - System deployment, Docker setup, and infrastructure components
+- **[Architecture Overview](Architecture-Overview)** - High-level system architecture, component diagram, and design principles
+- **[Data Flow Diagrams](Data-Flow-Diagrams)** - Sequence diagrams for ingestion, query, and search operations
+- **[Deployment Architecture](Deployment-Architecture)** - System deployment, Docker setup, and infrastructure components
 
 ### Component Documentation
-- **[Rust Components](Rust-Components.md)** - Detailed documentation of all Rust binaries and their responsibilities
-- **[Database Schema](Database-Schema.md)** - Qdrant collection structure, vector configuration, and data model
-- **[Chunking Strategies](Chunking-Strategies.md)** - Hierarchical parent-child chunking implementation and research background
+- **[Rust Components](Rust-Components)** - Detailed documentation of all Rust binaries and their responsibilities
+- **[Database Schema](Database-Schema)** - Qdrant collection structure, vector configuration, and data model
+- **[Chunking Strategies](Chunking-Strategies)** - Hierarchical parent-child chunking implementation and research background
 
 ### Operations & Workflows
-- **[Ingestion Workflows](Ingestion-Workflows.md)** - PDF processing, deduplication, and multi-collection management
-- **[Query Processing](Query-Processing.md)** - Search algorithms, hybrid search, and LLM integration
-- **[Collection Management](Collection-Management.md)** - Multi-collection architecture and backup/restore operations
+- **[Ingestion Workflows](Ingestion-Workflows)** - PDF processing, deduplication, and multi-collection management
+- **[Query Processing](Query-Processing)** - Search algorithms, hybrid search, and LLM integration
+- **[Collection Management](Collection-Management)** - Multi-collection architecture and backup/restore operations
 
 ## 🎯 Quick Navigation
 
 ### For Developers
-- Start with [Architecture Overview](Architecture-Overview.md) to understand the system design
-- Read [Rust Components](Rust-Components.md) for implementation details
-- Check [Data Flow Diagrams](Data-Flow-Diagrams.md) to understand operations
+- Start with [Architecture Overview](Architecture-Overview) to understand the system design
+- Read [Rust Components](Rust-Components) for implementation details
+- Check [Data Flow Diagrams](Data-Flow-Diagrams) to understand operations
 
 ### For DevOps/SRE
-- Review [Deployment Architecture](Deployment-Architecture.md) for infrastructure setup
-- See [Database Schema](Database-Schema.md) for data persistence
-- Consult [Collection Management](Collection-Management.md) for backup strategies
+- Review [Deployment Architecture](Deployment-Architecture) for infrastructure setup
+- See [Database Schema](Database-Schema) for data persistence
+- Consult [Collection Management](Collection-Management) for backup strategies
 
 ### For Data Scientists
-- Understand [Chunking Strategies](Chunking-Strategies.md) for RAG optimization
-- Review [Query Processing](Query-Processing.md) for search algorithms
-- Check [Ingestion Workflows](Ingestion-Workflows.md) for data preparation
+- Understand [Chunking Strategies](Chunking-Strategies) for RAG optimization
+- Review [Query Processing](Query-Processing) for search algorithms
+- Check [Ingestion Workflows](Ingestion-Workflows) for data preparation
 
 ## 🏗️ System Overview
 
@@ -81,10 +81,10 @@ The system is designed around these core principles:
 
 If you're new to the system:
 
-1. Read [Architecture Overview](Architecture-Overview.md) for the big picture
-2. Follow [Deployment Architecture](Deployment-Architecture.md) to understand setup
-3. Review [Data Flow Diagrams](Data-Flow-Diagrams.md) to see operations in action
-4. Dive into [Rust Components](Rust-Components.md) for implementation details
+1. Read [Architecture Overview](Architecture-Overview) for the big picture
+2. Follow [Deployment Architecture](Deployment-Architecture) to understand setup
+3. Review [Data Flow Diagrams](Data-Flow-Diagrams) to see operations in action
+4. Dive into [Rust Components](Rust-Components) for implementation details
 
 ## 📖 Additional Resources
 

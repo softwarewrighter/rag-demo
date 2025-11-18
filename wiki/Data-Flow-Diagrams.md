@@ -36,22 +36,22 @@ sequenceDiagram
         Script->>IH: Launch with markdown file
 
         IH->>IH: Read markdown content
-        IH->>IH: Hierarchical chunking<br/>(parent ~3500, child ~750)
+        IH->>IH: Hierarchical chunking (parent ~3500, child ~750)
 
         loop For each child chunk
-            IH->>Ollama: POST /api/embeddings<br/>{model: nomic-embed-text, prompt: chunk}
+            IH->>Ollama: POST /api/embeddings {model: nomic-embed-text, prompt: chunk}
             Ollama-->>IH: {embedding: [768 floats]}
         end
 
         IH->>Qdrant: Check collection exists
         alt Collection missing
-            IH->>Qdrant: Create collection<br/>(768 dims, Cosine, HNSW)
+            IH->>Qdrant: Create collection (768 dims, Cosine, HNSW)
         end
 
-        IH->>Qdrant: Upsert points batch<br/>(vectors + metadata)
+        IH->>Qdrant: Upsert points batch (vectors + metadata)
         Qdrant-->>IH: Success
 
-        IH->>FS: Update .ingested_checksums<br/>SHA256|path|count|timestamp
+        IH->>FS: Update .ingested_checksums SHA256|path|count|timestamp
         IH-->>Script: Ingestion complete
         Script-->>User: ✅ Success (N chunks ingested)
     end
@@ -83,7 +83,7 @@ sequenceDiagram
     end
 
     Script->>FS: Write .ingestion_stats.json
-    Script-->>User: Bulk ingestion complete<br/>X new, Y skipped
+    Script-->>User: Bulk ingestion complete X new, Y skipped
 ```
 
 ## Hierarchical Chunking Flow
@@ -93,15 +93,15 @@ sequenceDiagram
 ```mermaid
 flowchart TD
     Start[Markdown Document] --> Read[Read Full Content]
-    Read --> Parent[Create Parent Chunks<br/>~3500 chars]
+    Read --> Parent[Create Parent Chunks ~3500 chars]
 
     Parent --> P1[Parent Chunk 1]
     Parent --> P2[Parent Chunk 2]
     Parent --> PN[Parent Chunk N]
 
-    P1 --> C1[Child Chunk 1.1<br/>~750 chars]
-    P1 --> C2[Child Chunk 1.2<br/>~750 chars]
-    P1 --> C3[Child Chunk 1.3<br/>~750 chars]
+    P1 --> C1[Child Chunk 1.1 ~750 chars]
+    P1 --> C2[Child Chunk 1.2 ~750 chars]
+    P1 --> C3[Child Chunk 1.3 ~750 chars]
 
     P2 --> C4[Child Chunk 2.1]
     P2 --> C5[Child Chunk 2.2]
@@ -112,11 +112,11 @@ flowchart TD
     C4 --> E4[Generate Embedding]
     C5 --> E5[Generate Embedding]
 
-    E1 --> Q1[Store in Qdrant<br/>Payload: text, parent_id, source]
-    E2 --> Q2[Store in Qdrant<br/>Payload: text, parent_id, source]
-    E3 --> Q3[Store in Qdrant<br/>Payload: text, parent_id, source]
-    E4 --> Q4[Store in Qdrant<br/>Payload: text, parent_id, source]
-    E5 --> Q5[Store in Qdrant<br/>Payload: text, parent_id, source]
+    E1 --> Q1[Store in Qdrant Payload: text, parent_id, source]
+    E2 --> Q2[Store in Qdrant Payload: text, parent_id, source]
+    E3 --> Q3[Store in Qdrant Payload: text, parent_id, source]
+    E4 --> Q4[Store in Qdrant Payload: text, parent_id, source]
+    E5 --> Q5[Store in Qdrant Payload: text, parent_id, source]
 
     style P1 fill:#3498db
     style P2 fill:#3498db
@@ -142,21 +142,21 @@ sequenceDiagram
     User->>Script: ./query-rag.sh "What is Rust?"
     Script->>Search: Execute with query
 
-    Search->>Ollama: POST /api/embeddings<br/>{model: nomic-embed-text, prompt: query}
+    Search->>Ollama: POST /api/embeddings {model: nomic-embed-text, prompt: query}
     Ollama-->>Search: {embedding: [768 floats]}
 
-    Search->>Qdrant: POST /collections/{name}/points/search<br/>{vector: [...], limit: 5}
-    Qdrant-->>Search: Top 5 similar chunks<br/>(with scores & metadata)
+    Search->>Qdrant: POST /collections/{name}/points/search {vector: [...], limit: 5}
+    Qdrant-->>Search: Top 5 similar chunks (with scores & metadata)
 
     Search->>Search: Extract text from results
     Search-->>Script: JSON results with context
 
-    Script->>Script: Build RAG prompt:<br/>"Context: [...]\nQuestion: [...]"
+    Script->>Script: Build RAG prompt: "Context: [...]\nQuestion: [...]"
 
-    Script->>Ollama: POST /api/generate<br/>{model: llama3.2, prompt: rag_prompt}
+    Script->>Ollama: POST /api/generate {model: llama3.2, prompt: rag_prompt}
     Ollama-->>Script: Streaming response
 
-    Script-->>User: 📝 Answer with sources<br/>⏱️ Search: 67ms<br/>🤖 Generation: 3.2s
+    Script-->>User: 📝 Answer with sources ⏱️ Search: 67ms 🤖 Generation: 3.2s
 ```
 
 ### Interactive RAG Session
@@ -178,7 +178,7 @@ sequenceDiagram
 
         alt Special command
             User->>Script: stats
-            Script-->>User: 📊 Session statistics<br/>Queries: N, Avg time: Xms
+            Script-->>User: 📊 Session statistics Queries: N, Avg time: Xms
         else Regular query
             Script->>Search: Execute search
             Search->>Ollama: Get query embedding
@@ -211,13 +211,13 @@ sequenceDiagram
     participant Ollama
     participant Qdrant
 
-    User->>Script: ./hybrid-search.sh "rust macros"<br/>-v 0.7 -k 0.3 --filter is_code=true
+    User->>Script: ./hybrid-search.sh "rust macros" -v 0.7 -k 0.3 --filter is_code=true
     Script->>HS: Execute with params
 
     par Vector Search
         HS->>Ollama: Generate embedding
         Ollama-->>HS: Vector [768]
-        HS->>Qdrant: Vector search<br/>(with metadata filter)
+        HS->>Qdrant: Vector search (with metadata filter)
         Qdrant-->>HS: Vector results + scores
     and Keyword Search
         HS->>HS: Tokenize query: ["rust", "macros"]
@@ -231,7 +231,7 @@ sequenceDiagram
     HS->>HS: Top K results
 
     HS-->>Script: Hybrid results
-    Script-->>User: 📊 Results with scores<br/>Vector: X%, Keyword: Y%
+    Script-->>User: 📊 Results with scores Vector: X%, Keyword: Y%
 ```
 
 ### Keyword Scoring Algorithm
@@ -241,15 +241,15 @@ flowchart TD
     Start[Query: rust macros] --> Tokenize[Tokenize query]
     Tokenize --> Terms[Terms: rust, macros]
 
-    Terms --> Fetch[Fetch documents<br/>matching filter]
+    Terms --> Fetch[Fetch documents matching filter]
     Fetch --> Docs[Document Set]
 
     Docs --> BM25[Compute BM25 Scores]
 
-    BM25 --> TF[Term Frequency<br/>tf = count / total_terms]
-    BM25 --> IDF[Inverse Doc Frequency<br/>idf = log(N / df)]
+    BM25 --> TF[Term Frequency tf = count / total_terms]
+    BM25 --> IDF[Inverse Doc Frequency idf = log(N / df)]
 
-    TF --> Calc[BM25 Formula:<br/>sum over terms]
+    TF --> Calc[BM25 Formula: sum over terms]
     IDF --> Calc
 
     Calc --> Norm[Normalize to 0-1]
@@ -270,27 +270,27 @@ sequenceDiagram
     participant Qdrant
     participant FS as Filesystem
 
-    User->>Script: ./export-collection.sh python-books<br/>--include-vectors --pretty
+    User->>Script: ./export-collection.sh python-books --include-vectors --pretty
     Script->>Export: Execute with params
 
     Export->>Qdrant: GET /collections/python-books
     Qdrant-->>Export: Collection info (count, config)
 
-    Export->>Export: Calculate batch size<br/>(limit: 100 per batch)
+    Export->>Export: Calculate batch size (limit: 100 per batch)
 
     loop For each batch (offset += 100)
-        Export->>Qdrant: POST /collections/python-books/points/scroll<br/>{limit: 100, offset: X, with_vector: true}
+        Export->>Qdrant: POST /collections/python-books/points/scroll {limit: 100, offset: X, with_vector: true}
         Qdrant-->>Export: Batch of points
         Export->>Export: Append to JSON structure
     end
 
-    Export->>Export: Build metadata:<br/>- Collection config<br/>- Export timestamp<br/>- Point count
+    Export->>Export: Build metadata: - Collection config - Export timestamp - Point count
 
-    Export->>FS: Write exports/python-books.json<br/>(pretty formatted)
+    Export->>FS: Write exports/python-books.json (pretty formatted)
     FS-->>Export: Success
 
     Export-->>Script: Export complete
-    Script-->>User: ✅ Exported N points<br/>📁 exports/python-books.json
+    Script-->>User: ✅ Exported N points 📁 exports/python-books.json
 ```
 
 ## Collection Import Flow
@@ -321,13 +321,13 @@ sequenceDiagram
             Import-->>User: ❌ Error: Collection exists
         else Create or force merge
             alt Collection missing
-                Import->>Qdrant: Create collection<br/>(match exported config)
+                Import->>Qdrant: Create collection (match exported config)
             end
 
             Import->>Import: Batch points (100 per batch)
 
             loop For each batch
-                Import->>Qdrant: PUT /collections/{name}/points<br/>{points: [...]}
+                Import->>Qdrant: PUT /collections/{name}/points {points: [...]}
                 Qdrant-->>Import: Success
             end
 
@@ -335,7 +335,7 @@ sequenceDiagram
             Qdrant-->>Import: Collection stats
 
             Import-->>Script: Import complete
-            Script-->>User: ✅ Imported N points<br/>Collection: {name}
+            Script-->>User: ✅ Imported N points Collection: {name}
         end
     end
 ```
@@ -355,14 +355,14 @@ flowchart TD
     GetInfo --> Compare{Same file?}
 
     Compare -->|Yes| Skip[Skip ingestion]
-    Compare -->|No| Warn[⚠️ Collision detected<br/>Different files, same hash]
+    Compare -->|No| Warn[⚠️ Collision detected Different files, same hash]
 
     Check -->|No| Ingest[Proceed with ingestion]
     Ingest --> Process[Process PDF → Chunks → Embeddings]
     Process --> Store[Store in Qdrant]
     Store --> Record[Append to .ingested_checksums]
 
-    Record --> Format["Format:<br/>hash|filepath|chunk_count|timestamp"]
+    Record --> Format["Format: hash|filepath|chunk_count|timestamp"]
     Format --> Write[Write to file]
     Write --> Done[✅ Complete]
 
@@ -399,7 +399,7 @@ sequenceDiagram
     User->>Script: ./ingest-by-directory.sh ./ingest
     Script->>Script: Scan directory structure
 
-    Note over Script: ./ingest/rust/*.pdf → rust-books<br/>./ingest/python/*.pdf → python-books<br/>./ingest/javascript/*.pdf → javascript-books
+    Note over Script: ./ingest/rust/*.pdf → rust-books ./ingest/python/*.pdf → python-books ./ingest/javascript/*.pdf → javascript-books
 
     loop For each subdirectory
         Script->>IBD: Process directory → collection
@@ -422,7 +422,7 @@ sequenceDiagram
         Script-->>User: ✅ rust-books: 342 chunks
     end
 
-    Script-->>User: 🎉 All collections created<br/>3 collections, 876 total chunks
+    Script-->>User: 🎉 All collections created 3 collections, 876 total chunks
 ```
 
 ## Performance Metrics Flow
@@ -474,13 +474,13 @@ flowchart LR
 
 ## Related Documentation
 
-- [Architecture Overview](Architecture-Overview.md) - High-level system design
-- [Rust Components](Rust-Components.md) - Component implementation details
-- [Database Schema](Database-Schema.md) - Qdrant data structures
-- [Query Processing](Query-Processing.md) - Search algorithms in detail
-- [Ingestion Workflows](Ingestion-Workflows.md) - Complete ingestion processes
+- [Architecture Overview](Architecture-Overview) - High-level system design
+- [Rust Components](Rust-Components) - Component implementation details
+- [Database Schema](Database-Schema) - Qdrant data structures
+- [Query Processing](Query-Processing) - Search algorithms in detail
+- [Ingestion Workflows](Ingestion-Workflows) - Complete ingestion processes
 
 ---
 
 **Last Updated**: 2025-11-17
-**Related**: [Home](Home.md) | [Architecture](Architecture-Overview.md) | [Components](Rust-Components.md)
+**Related**: [Home](Home) | [Architecture](Architecture-Overview) | [Components](Rust-Components)

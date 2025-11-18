@@ -41,7 +41,7 @@ graph TB
     end
 
     subgraph "Persistent Storage"
-        VOL[./qdrant_storage/<br/>Docker Volume]
+        VOL[./qdrant_storage/ Docker Volume]
     end
 
     REST --> ENGINE
@@ -283,16 +283,16 @@ Used by `pdf-to-embeddings`:
 ```mermaid
 graph TB
     subgraph "HNSW Parameters"
-        M[m = 16<br/>Links per node]
-        EF[ef_construct = 200<br/>Build accuracy]
-        THRESH[threshold = 100<br/>Auto-index trigger]
+        M[m = 16 Links per node]
+        EF[ef_construct = 200 Build accuracy]
+        THRESH[threshold = 100 Auto-index trigger]
     end
 
     subgraph "Index Layers"
-        L0[Layer 0<br/>All vectors]
-        L1[Layer 1<br/>Sample of L0]
-        L2[Layer 2<br/>Sample of L1]
-        L3[Layer 3<br/>Entry point]
+        L0[Layer 0 All vectors]
+        L1[Layer 1 Sample of L0]
+        L2[Layer 2 Sample of L1]
+        L3[Layer 3 Entry point]
     end
 
     M --> L0
@@ -416,7 +416,7 @@ sequenceDiagram
     WAL->>Segment: Apply to segment
     Segment->>Disk: Flush when full
 
-    Note over WAL: Ensures durability<br/>before acknowledging
+    Note over WAL: Ensures durability before acknowledging
 ```
 
 **Properties**:
@@ -658,13 +658,13 @@ Content-Type: application/json
 
 ## Related Documentation
 
-- [Architecture Overview](Architecture-Overview.md) - System design
-- [Data Flow Diagrams](Data-Flow-Diagrams.md) - Data processing flows
-- [Rust Components](Rust-Components.md) - Component details
-- [Deployment Architecture](Deployment-Architecture.md) - Infrastructure
-- [Collection Management](Collection-Management.md) - Operational guide
+- [Architecture Overview](Architecture-Overview) - System design
+- [Data Flow Diagrams](Data-Flow-Diagrams) - Data processing flows
+- [Rust Components](Rust-Components) - Component details
+- [Deployment Architecture](Deployment-Architecture) - Infrastructure
+- [Collection Management](Collection-Management) - Operational guide
 
 ---
 
 **Last Updated**: 2025-11-17
-**Related**: [Home](Home.md) | [Architecture](Architecture-Overview.md) | [Components](Rust-Components.md)
+**Related**: [Home](Home) | [Architecture](Architecture-Overview) | [Components](Rust-Components)

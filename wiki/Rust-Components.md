@@ -20,26 +20,26 @@ The RAG Demo system comprises 11 Rust binaries and 1 shared library. Each compon
 ```mermaid
 graph TB
     subgraph "Primary Components (Recommended)"
-        IH[ingest-hierarchical<br/>Parent-Child Chunking]
-        SH[search-hierarchical<br/>Context-Aware Search]
-        HS[hybrid-search<br/>Vector + Keyword]
-        IBD[ingest-by-directory<br/>Multi-Collection]
+        IH[ingest-hierarchical Parent-Child Chunking]
+        SH[search-hierarchical Context-Aware Search]
+        HS[hybrid-search Vector + Keyword]
+        IBD[ingest-by-directory Multi-Collection]
     end
 
     subgraph "Management Components"
-        EXP[export-collection<br/>Backup]
-        IMP[import-collection<br/>Restore]
+        EXP[export-collection Backup]
+        IMP[import-collection Restore]
     end
 
     subgraph "Legacy/Alternative Components"
-        IM[ingest-markdown<br/>Code Preservation]
-        IMM[ingest-markdown-multi<br/>Multi-Scale]
-        P2E[pdf-to-embeddings<br/>Simple Chunking]
-        SQ[search-qdrant<br/>Basic Search]
+        IM[ingest-markdown Code Preservation]
+        IMM[ingest-markdown-multi Multi-Scale]
+        P2E[pdf-to-embeddings Simple Chunking]
+        SQ[search-qdrant Basic Search]
     end
 
     subgraph "Shared Library"
-        LIB[lib.rs<br/>Utilities & Clients]
+        LIB[lib.rs Utilities & Clients]
     end
 
     IH --> LIB
@@ -153,15 +153,15 @@ cargo test --lib
 **Algorithm**:
 ```mermaid
 flowchart TD
-    A[Read Markdown] --> B[Split into Parent Chunks<br/>~3500 chars]
+    A[Read Markdown] --> B[Split into Parent Chunks ~3500 chars]
     B --> C1[Parent 1]
     B --> C2[Parent 2]
-    C1 --> D1[Split into Children<br/>~750 chars each]
-    C2 --> D2[Split into Children<br/>~750 chars each]
+    C1 --> D1[Split into Children ~750 chars each]
+    C2 --> D2[Split into Children ~750 chars each]
     D1 --> E1[Embed Child 1.1]
     D1 --> E2[Embed Child 1.2]
     D2 --> E3[Embed Child 2.1]
-    E1 --> F[Store with metadata:<br/>parent_id, chunk_index, source]
+    E1 --> F[Store with metadata: parent_id, chunk_index, source]
     E2 --> F
     E3 --> F
 ```
@@ -251,9 +251,9 @@ flowchart TD
     B -->|#| D[Heading]
     B -->|Text| E[Regular Text]
 
-    C --> F[Code Block Chunk<br/>is_code=true]
-    D --> G[Text Chunk<br/>chunk_type=Heading]
-    E --> H[Text Chunk<br/>chunk_type=Text]
+    C --> F[Code Block Chunk is_code=true]
+    D --> G[Text Chunk chunk_type=Heading]
+    E --> H[Text Chunk chunk_type=Text]
 
     F --> I[Embed + Store]
     G --> I
@@ -394,8 +394,8 @@ cargo test --bin search-hierarchical
 **Algorithm**:
 ```mermaid
 flowchart TD
-    Q[Query: rust macros] --> V[Vector Search<br/>Weight: 0.7]
-    Q --> K[Keyword Search<br/>Weight: 0.3]
+    Q[Query: rust macros] --> V[Vector Search Weight: 0.7]
+    Q --> K[Keyword Search Weight: 0.3]
 
     V --> V1[Embed query]
     V1 --> V2[Qdrant vector search]
@@ -405,7 +405,7 @@ flowchart TD
     K1 --> K2[Compute BM25 scores]
     K2 --> K3[Normalize scores → 0-1]
 
-    V3 --> B[Blend Scores<br/>final = 0.7×vec + 0.3×kw]
+    V3 --> B[Blend Scores final = 0.7×vec + 0.3×kw]
     K3 --> B
 
     B --> S[Sort by blended score]
@@ -633,12 +633,12 @@ flowchart LR
     HS --> LIB
     SQ --> LIB
 
-    LIB --> OL[Ollama<br/>Embedding]
-    LIB --> QD[Qdrant<br/>Vector Search]
+    LIB --> OL[Ollama Embedding]
+    LIB --> QD[Qdrant Vector Search]
 
     QD --> R[Results]
     R --> RAG[RAG Script]
-    RAG --> OL2[Ollama<br/>LLM Generation]
+    RAG --> OL2[Ollama LLM Generation]
     OL2 --> ANS[Answer]
 
     style SH fill:#e74c3c
@@ -723,13 +723,13 @@ Automated testing on every push via GitHub Actions:
 
 ## Related Documentation
 
-- [Architecture Overview](Architecture-Overview.md) - System design
-- [Data Flow Diagrams](Data-Flow-Diagrams.md) - Sequence diagrams
-- [Database Schema](Database-Schema.md) - Qdrant structure
-- [Chunking Strategies](Chunking-Strategies.md) - Research and implementation
+- [Architecture Overview](Architecture-Overview) - System design
+- [Data Flow Diagrams](Data-Flow-Diagrams) - Sequence diagrams
+- [Database Schema](Database-Schema) - Qdrant structure
+- [Chunking Strategies](Chunking-Strategies) - Research and implementation
 - [Testing Guide](../CLAUDE.md#testing--validation) - Quality gates
 
 ---
 
 **Last Updated**: 2025-11-17
-**Related**: [Home](Home.md) | [Architecture](Architecture-Overview.md) | [Data Flow](Data-Flow-Diagrams.md)
+**Related**: [Home](Home) | [Architecture](Architecture-Overview) | [Data Flow](Data-Flow-Diagrams)
