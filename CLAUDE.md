@@ -77,6 +77,11 @@ RAG_COLLECTION=python-books ./scripts/ingest-pdf-smart.sh python-guide.pdf
 
 # PDF to Markdown conversion
 ./scripts/pdf-to-markdown.sh input.pdf ./extracted/
+
+# Strip Project Gutenberg boilerplate from text files
+./scripts/strip-gutenberg.sh book.txt                    # outputs book-clean.txt
+./scripts/strip-gutenberg.sh book.txt cleaned/book.txt   # custom output path
+./scripts/strip-gutenberg.sh book.txt -                  # output to stdout
 ```
 
 ### Querying & Search
@@ -187,6 +192,8 @@ PDF → pdftotext → Markdown → Hierarchical Chunking → Embeddings → Qdra
                                    ↓
                             Parent (context)
                             Child (precise match)
+
+TXT (Gutenberg) → strip-gutenberg.sh → Hierarchical Chunking → Embeddings → Qdrant
 ```
 
 ### Storage & Persistence
