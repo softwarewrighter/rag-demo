@@ -144,6 +144,22 @@ POST /collections/{collection}/points/search
 **4K Context Accuracy**: 2/6 correct, 2/6 partial (33% fully correct)
 **16K Context Accuracy**: 4/6 correct, 1/6 partial (67% fully correct)
 
+### Rigorous "Show Your Work" Evaluation
+
+The above results used mistral:7b which may know War and Peace from training. A stricter test uses a smaller model (llama3.2:3b) and requires quoting source text:
+
+| Question | Retrieved? | Correct Answer? | Valid Quote? |
+|----------|-----------|-----------------|--------------|
+| Andrei's father | Yes | Partial | No |
+| Andrei's estate | Yes | **Yes** | **Yes** |
+| Pierre's wife | Yes | No (wrong wife) | No |
+| Natasha elope | Yes | **Yes** | No |
+| Freemasons | Yes | Partial | No |
+
+**Rigorous accuracy: 2/5 with valid quotes (40%)**
+
+Key insight: Retrieval works (5/5), but smaller models struggle to find and quote the right sentence from retrieved context. The 67% accuracy with mistral:7b was partially due to the LLM's training knowledge compensating for imprecise retrieval.
+
 ## Analysis
 
 ### What Vector Search Handles Well
@@ -190,9 +206,24 @@ Doubling context from 4K to 16K doubled accuracy. The correct answer often exist
 
 ### Remaining Challenges
 
-1. **Chunk boundary splits**: Important context can span multiple chunks
-2. **Inverse relationships**: "X's father" vs "father of X" vs "son of Y"
-3. **Rare terminology**: Keywords appearing <5 times can't benefit from keyword boosting
+1. **Chunk boundary splits**: Important context can span multiple chunks. Adjacent chunk expansion can help but only if we find a nearby chunk first.
+
+2. **Semantic gap**: Question "Who does Natasha almost elope with?" doesn't semantically match answer "You promised Countess Rostóva to marry her and were about to elope with her" - different framing (question vs accusation), different name form (Natasha vs Countess Rostóva). The answer chunk ranks outside top 50.
+
+3. **Inverse relationships**: "X's father" vs "father of X" vs "son of Y"
+
+4. **Rare terminology**: Keywords appearing <5 times can't benefit from keyword boosting
+
+### Chunk Overlap Analysis
+
+Current implementation has **no overlap** between chunks. Would more overlap help?
+
+| More Overlap | Pros | Cons |
+|-------------|------|------|
+| Yes | Reduces boundary issues | Increases storage, redundant embeddings |
+| Adjacent expansion | Gets context around matches | Only helps if we find nearby chunk first |
+
+For the Natasha/Anatole question, the answer chunk isn't found at all (not in top 50), so overlap and adjacent expansion wouldn't help - the fundamental issue is semantic distance between question and answer.
 
 ## Commands Reference
 
@@ -215,6 +246,9 @@ RAG_COLLECTION=classic-literature ./scripts/query-rag-multipass.sh "your questio
 #   multi    - Multiple query variations combined
 #   paginate - Batch summarization for very large context
 #   parent   - Include parent chunks for broader context
+
+# Adjacent chunk expansion (experimental)
+RAG_COLLECTION=classic-literature ./scripts/query-rag-adjacent.sh "your question"
 
 # Direct hybrid search (for debugging)
 ./target/release/hybrid-search "search terms" --collection classic-literature --limit 20
