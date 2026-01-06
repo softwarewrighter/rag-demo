@@ -15,10 +15,85 @@ preserves code structure and improves search quality.
 - *Qdrant*: Vector database for similarity search
 - *Ollama*: Local LLM for embeddings and generation  
 - *Smart Ingestion*: PDF → Markdown → Structure-aware chunks → Vectors
+* to be eval'ed
+#+BEGIN_EXAMPLE
+;; ~/.emacs or ~/.emacs.d/init.el
+
+;; Org-babel setup for rag-demo literate programming
+(require 'org)
+(require 'ob-shell)  ;; or (require 'ob-sh) for older Emacs
+
+;; Enable languages
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (shell . t)
+   (python . t)))
+
+;; Security: Don't ask for confirmation for safe languages
+(setq org-confirm-babel-evaluate
+      (lambda (lang body)
+        (not (member lang '("shell" "sh" "bash" "emacs-lisp")))))
+
+;; Better code block editing
+(setq org-src-fontify-natively t
+      org-src-tab-acts-natively t
+      org-src-preserve-indentation t
+      org-edit-src-content-indentation 0)
+
+;; Useful keybindings
+;; C-c C-c   Execute code block
+;; C-c C-v b Execute all blocks in buffer
+;; C-c C-v s Execute subtree
+;; C-c '     Edit code block in native mode
+
+;; Optional: Set default directory for shell blocks
+;; (setq org-babel-default-header-args:shell
+;;       '((:dir . "/home/user/rag-demo")))
+#+END_EXAMPLE
 
 * Initial State Check
 
 First, let's verify our system components are running:
+
+(org-babel-do-load-languages 'org-babel-load-languages '((shell . t)))
+#+BEGIN_SRC sh :dir ~/github/softwarewrighter/rag-demo
+./scripts/setup-qdrant.sh
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+🚀 Setting up Qdrant RAG Server
+================================
+✅ Docker is installed and running
+🔄 Qdrant container already exists
+▶️  Starting existing Qdrant container...
+qdrant
+✅ Qdrant started
+⏳ Waiting for Qdrant to be ready...
+.✅ Qdrant is ready!
+
+📚 Creating collection 'documents'...
+🏷️  Adding alias 'rust-books' for better clarity...
+
+🔍 Verifying Qdrant setup...
+✅ Qdrant REST API is responding at http://localhost:6333
+✅ Qdrant gRPC API is available at http://localhost:6334
+
+📊 Collections:
+  - lisp-books
+  - javascript-books
+  - rust-books
+  - python-books
+  - documents
+
+✨ Qdrant setup complete!
+
+Next steps:
+  1. Run ./scripts/ingest-pdf.sh <pdf-file> to ingest a PDF
+  2. Run ./scripts/query-rag.sh <query> to search and get answers
+  3. Run ./scripts/health-check.sh to check system status
+#+end_example
 
 #+BEGIN_SRC sh :dir ~/github/softwarewrighter/rag-demo
 ./scripts/health-check.sh
@@ -31,15 +106,23 @@ First, let's verify our system components are running:
 
 Docker:        ✅ Running
 Qdrant:        ✅ Running on port 6333
-  Collections: documents
-  Documents:   828 vectors stored
+  Collections: lisp-books
+javascript-books
+rust-books
+python-books
+documents
+  Documents:   0 vectors stored
 Ollama:        ✅ Running on port 11434
-  Models:      nomic-embed-text:latest llama3.2:latest
+  Models:      llama3.2:latest nomic-embed-text:latest qwen2.5vl:7b qwen2.5-coder:14b llama3.2-vision:11b 
 Rust Tools:    ✅ Built
 jq:            ✅ Installed
 
 ==========================
 ✨ All systems operational!
+
+Quick Start:
+  1. Ingest a PDF:  ./scripts/ingest-pdf.sh document.pdf
+  2. Query the RAG: ./scripts/query-rag.sh 'your question'
 #+end_example
 
 ** Current Database State
@@ -51,14 +134,12 @@ Check what's currently in the database (from old ingestion):
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-📊 Collection Statistics:
-────────────────────────────────────────
-Collection: documents
-  Status: green
-  Vectors stored: 828
-  Vectors indexed: 0
-#+end_example
+: [0;34m📊 Collection Statistics:[0m
+: ────────────────────────────────────────
+: [1;33mCollection: lisp-books[0m
+:   Status: green
+:   Vectors stored: 21237
+:   Vectors indexed: 21237
 
 * Testing Old Ingestion Quality
 
@@ -71,26 +152,6 @@ echo "Show me a complete macro_rules example with syntax" | timeout 10 ./scripts
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-🤖 Answer:
-────────────────────────────────────────
-Based on the context, here's information about macro_rules syntax, though a complete example isn't fully provided:
-
-Declarative macros use `macro_rules!` with a syntax that includes:
-- Matchers to identify input structure
-- Transcribers to generate output code
-- Pattern matching-like syntax
-
-The context mentions that declarative macros "work with token streams" and use the `macro_name!` syntax to "add or manipulate code anywhere."
-
-While the full syntax example isn't shown in these chunks, the context indicates that macro_rules uses:
-1. Pattern matching on the input
-2. Token stream manipulation
-3. Code generation based on matched patterns
-
-A typical structure would involve matching patterns and transcribing them into new code, but the specific syntax details would be covered in other parts of the document.
-────────────────────────────────────────
-#+end_example
 
 Note: The old system couldn't find actual code examples!
 
@@ -99,13 +160,14 @@ Note: The old system couldn't find actual code examples!
 #+BEGIN_SRC sh :dir ~/github/softwarewrighter/rag-demo  
 ./target/release/search-qdrant "fn main" --limit 2 | grep -E "Score:|fn main"
 #+END_SRC
+#+BEGIN_SRC sh :dir ~/github/softwarewrighter/rag-demo  
+./target/release/search-qdrant "derive" --limit 2 | grep -E "Score:|fn main"
+#+END_SRC
 
 #+RESULTS:
-#+begin_example
---- Result 1 (Score: 0.483) ---
-fn main() {
---- Result 2 (Score: 0.482) ---
-#+end_example
+: --- Result 1 (Score: 0.645) ---
+: --- Result 2 (Score: 0.642) ---
+: fn main() {
 
 The scores are low (0.48) indicating poor semantic matching.
 
@@ -148,25 +210,24 @@ head -30 extracted/Write_Powerful_Rust_Macros.md | tail -20
 #+begin_example
 
 
-MANNING
 
-Sam Van Overmeire
+```rust
+                                    The types of macros in Rust
 
-2 EPILOGUE  
 
- 
+                           Macros in Rust
+```
 
- 
- 
- 
- 
- 
+```rust
+                                                Procedural macros
+```
 
- 
- 
- 
- 
- Macros in Rust
+Declarative macros
+```rust
+                                              work with token streams.
+
+
+```
 #+end_example
 
 ** Step 3: Build the Smart Ingestion Tool
@@ -283,13 +344,13 @@ Let's check the search performance and relevance:
 
 #+RESULTS:
 #+begin_example
-⚡ Performance Test:
+[0;34m⚡ Performance Test:[0m
 ────────────────────────────────────────
 Testing search for: "example macro"
-✓ Search completed in 67ms
-  Best match score: 0.6864112019538879
+[0;32m✓ Search completed in 69ms[0m
+  Best match score: 0.703687846660614
 
-💡 Tips:
+[0;36m💡 Tips:[0m
   • Visit http://localhost:6333/dashboard for the web UI
   • Use ./scripts/interactive-rag.sh for testing queries
   • Ingest more PDFs with ./scripts/ingest-pdf.sh <file>
@@ -462,14 +523,12 @@ Down from 2376 to 1509 code blocks - a 37% reduction while preserving structure!
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-📊 Collection Statistics:
-────────────────────────────────────────
-Collection: documents
-  Status: green
-  Vectors stored: 3088
-  Vectors indexed: 0
-#+end_example
+: [0;34m📊 Collection Statistics:[0m
+: ────────────────────────────────────────
+: [1;33mCollection: lisp-books[0m
+:   Status: green
+:   Vectors stored: 21237
+:   Vectors indexed: 21237
 
 Final chunk count: 3088 (1506 code blocks, 1582 text sections)
 
@@ -482,36 +541,6 @@ echo "Show me a complete macro_rules example with pattern matching" | timeout 10
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-🤖 Answer:
-────────────────────────────────────────
-Here's a complete `macro_rules!` example with pattern matching:
-
-```rust
-macro_rules! greeting {
-    ($name:literal, $greeting:literal) => {
-        format!("{}, {}!", $greeting, $name)
-    };
-    ($name:literal) => {
-        greeting!($name, "Hello")
-    };
-}
-
-fn main() {
-    let greet = greeting!("Sam", "Heya");  // Returns: "Heya, Sam!"
-    let greet_with_default = greeting!("Sam");  // Returns: "Hello, Sam!"
-}
-```
-
-This macro demonstrates:
-1. **Pattern matching** with two different patterns - one accepting two parameters and one accepting just one
-2. **Literal matching** using `$name:literal` and `$greeting:literal` to match string literals
-3. **Recursive macro invocation** where the single-parameter version calls the two-parameter version with a default value
-4. **Token expansion** using the matched tokens in the `format!` macro
-
-The macro uses declarative macro syntax with `macro_rules!` and shows how patterns are matched from top to bottom, selecting the first matching pattern.
-────────────────────────────────────────
-#+end_example
 
 Excellent! The system now finds and returns actual code examples with proper formatting.
 
@@ -524,16 +553,16 @@ Excellent! The system now finds and returns actual code examples with proper for
 #+RESULTS:
 #+begin_example
 {
-  "score": 0.72841454,
-  "is_code": true
+  "score": 0.48293235898017883,
+  "is_code": null
 }
 {
-  "score": 0.72841454,
-  "is_code": true
+  "score": 0.4818528890609741,
+  "is_code": null
 }
 {
-  "score": 0.72841454,
-  "is_code": true
+  "score": 0.4817553758621216,
+  "is_code": null
 }
 #+end_example
 
@@ -546,28 +575,6 @@ echo "What is the difference between declarative and procedural macros?" | timeo
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-🤖 Answer:
-────────────────────────────────────────
-Based on the provided context, here are the key differences between declarative and procedural macros in Rust:
-
-**Declarative Macros (macro_rules!):**
-- Use pattern matching syntax similar to Rust's match expressions
-- Work by matching input patterns and transcribing them to output code
-- Limited to pattern matching on the input tokens
-- Simpler to write for basic use cases
-- Use the `macro_rules!` syntax
-
-**Procedural Macros:**
-- Act like functions that take Rust code as input and produce Rust code as output
-- Have full access to Rust's type system and can perform arbitrary computation
-- Can parse and manipulate the abstract syntax tree (AST)
-- More powerful but require more setup (separate crate with specific dependencies)
-- Come in three varieties: derive macros, attribute macros, and function-like macros
-
-The main distinction is that declarative macros work through pattern matching and token substitution, while procedural macros are essentially Rust functions that transform code, giving them much more power and flexibility at the cost of complexity.
-────────────────────────────────────────
-#+end_example
 
 Perfect! The system provides accurate, comprehensive answers.
 
@@ -1051,19 +1058,18 @@ cargo test --bin ingest-hierarchical 2>&1 | grep -E "test |test result:"
 #+begin_example
 test tests::test_create_summary_empty_content ... ok
 test tests::test_create_summary_truncates_long_lines ... ok
-test tests::test_create_summary_with_headers ... ok
-test tests::test_hierarchical_chunks_simple_text ... ok
-test tests::test_hierarchical_chunks_with_code_blocks ... ok
-test tests::test_hierarchical_chunks_multiple_sections ... ok
-test tests::test_child_chunks_respects_code_boundaries ... ok
-test tests::test_child_chunks_handles_lists ... ok
-test tests::test_child_chunks_minimum_content ... ok
-test tests::test_hierarchical_chunks_preserves_line_numbers ... ok
 test tests::test_chunk_type_enum ... ok
-test tests::test_hierarchical_chunks_min_parent_size ... ok
 test tests::test_child_chunk_indexing ... ok
-
-test result: ok. 15 passed; 0 failed; 0 ignored
+test tests::test_create_summary_with_headers ... ok
+test tests::test_hierarchical_chunks_min_parent_size ... ok
+test tests::test_child_chunks_minimum_content ... ok
+test tests::test_hierarchical_chunks_simple_text ... ok
+test tests::test_child_chunks_respects_code_boundaries ... ok
+test tests::test_hierarchical_chunks_with_code_blocks ... ok
+test tests::test_child_chunks_handles_lists ... ok
+test tests::test_hierarchical_chunks_multiple_sections ... ok
+test tests::test_hierarchical_chunks_preserves_line_numbers ... ok
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 #+end_example
 
 ** Checking Code Formatting
@@ -1143,29 +1149,36 @@ Standard hybrid search with default weights (70% vector, 30% keyword):
 
 #+RESULTS:
 #+begin_example
+[0;34mBuilding hybrid-search binary...[0m
 🔍 Hybrid Search: Vector + Keyword
    Query: macro_rules example
    Weights: 70% vector, 30% keyword
 
-📊 Vector search found 20 results
+📊 Vector search found 6 results
 🎯 Top 3 Results:
 
 --- Result 1 ---
-Score: 0.875 (vector: 0.823, keyword: 0.245)
-macro_rules! greeting {
-    ($name:literal, $greeting:literal) => {
-        format!("{}, {}!", $greeting, $name)
-    };
-}
+Score: 0.738 (vector: 0.723, keyword: 0.138)
+ful function-like macros, the final type
+of procedural macro, in action.
+
+ Chapter 6 talks about (unit) testing a macro, using a derive macro that gener-
+ates a builder as its leading example.
+
+...
 
 --- Result 2 ---
-Score: 0.834 (vector: 0.789, keyword: 0.213)
-Here's a complete example of macro_rules! with pattern matching:
-The macro demonstrates declarative syntax...
+Score: 0.732 (vector: 0.717, keyword: 0.139)
+programming should not be your first choice when solving problems, but
+it can help you avoid boilerplate and duplication, make your applications easier
+to use, or do things that are difficult to do wi...
 
 --- Result 3 ---
-Score: 0.812 (vector: 0.765, keyword: 0.198)
-macro_rules! can match multiple patterns and expand to different code...
+Score: 0.728 (vector: 0.704, keyword: 0.168)
+othing. That’s because  the  first clause  accepts any literal,  which includes zero. And
+since the macro checks the matcher in order and always matches the first more gen-
+eral clause, the second o...
+
 #+end_example
 
 ** Hybrid Search with Adjusted Weights
