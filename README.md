@@ -1,5 +1,7 @@
 # RAG Demo with Qdrant and Ollama
 
+- [explainer video](https://www.youtube.com/watch?v=MlpKMxkCAv8)
+
 > **Copyright © 2025 Michael A. Wright** | Licensed under the [MIT License](LICENSE)
 
 A local RAG (Retrieval-Augmented Generation) system using:
