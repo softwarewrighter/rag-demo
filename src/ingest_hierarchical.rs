@@ -83,10 +83,11 @@ enum ChunkType {
     Mixed,
 }
 
-/// Based on research: ~400 tokens (1600 chars) for children, 2000-4000 chars for parents
-const CHILD_TARGET_SIZE: usize = 1600;
-const PARENT_TARGET_SIZE: usize = 4000;
-const MIN_PARENT_SIZE: usize = 2000;
+/// Based on research: ~400 tokens for children, ~1000 tokens for parents
+/// Reduced to stay under embedding model's ~2000 char limit
+const CHILD_TARGET_SIZE: usize = 1200;
+const PARENT_TARGET_SIZE: usize = 1800;
+const MIN_PARENT_SIZE: usize = 800;
 
 fn create_hierarchical_chunks(content: &str) -> (Vec<ParentChunk>, Vec<ChildChunk>) {
     let mut parent_chunks = Vec::new();
@@ -333,16 +334,32 @@ fn create_child_chunks(
     children
 }
 
+/// Safely truncate a string at a character boundary
+fn safe_truncate(s: &str, max_chars: usize) -> &str {
+    if s.chars().count() <= max_chars {
+        s
+    } else {
+        // Find the byte position of the nth character
+        let byte_pos = s
+            .char_indices()
+            .nth(max_chars)
+            .map(|(pos, _)| pos)
+            .unwrap_or(s.len());
+        &s[..byte_pos]
+    }
+}
+
 fn create_summary(content: &str, headers: &[String]) -> String {
     // Simple summary: headers + first paragraph
     let mut summary = headers.join(" > ");
 
     // Find first substantial paragraph
     for line in content.lines() {
-        if !line.starts_with('#') && !line.trim().is_empty() && line.len() > 50 {
+        if !line.starts_with('#') && !line.trim().is_empty() && line.chars().count() > 50 {
             summary.push_str(" | ");
-            summary.push_str(&line[..line.len().min(200)]);
-            if line.len() > 200 {
+            let truncated = safe_truncate(line, 200);
+            summary.push_str(truncated);
+            if line.chars().count() > 200 {
                 summary.push_str("...");
             }
             break;
@@ -352,27 +369,140 @@ fn create_summary(content: &str, headers: &[String]) -> String {
     summary
 }
 
-fn get_embedding(client: &Client, ollama_url: &str, model: &str, text: &str) -> Result<Vec<f32>> {
-    let request = EmbeddingRequest {
-        model: model.to_string(),
-        prompt: text.to_string(),
-    };
+/// Maximum characters to send to embedding model (nomic-embed-text crashes around 2500)
+const MAX_EMBEDDING_CHARS: usize = 2000;
 
-    let response = client
-        .post(format!("{}/api/embeddings", ollama_url))
-        .json(&request)
-        .send()
-        .context("Failed to get embedding from Ollama")?;
+/// Sanitize text for embedding by replacing problematic Unicode with ASCII equivalents
+fn sanitize_for_embedding(text: &str) -> String {
+    let mut result = String::with_capacity(text.len());
 
-    if !response.status().is_success() {
-        anyhow::bail!("Ollama returned error: {}", response.status());
+    for c in text.chars() {
+        let replacement = match c {
+            // Box drawing characters → ASCII
+            '═' | '─' | '━' | '╌' | '╍' | '┄' | '┅' | '┈' | '┉' => '-',
+            '│' | '┃' | '╎' | '╏' | '┆' | '┇' | '┊' | '┋' => '|',
+            '┌' | '┍' | '┎' | '┏' | '╒' | '╓' | '╔' => '+',
+            '┐' | '┑' | '┒' | '┓' | '╕' | '╖' | '╗' => '+',
+            '└' | '┕' | '┖' | '┗' | '╘' | '╙' | '╚' => '+',
+            '┘' | '┙' | '┚' | '┛' | '╛' | '╜' | '╝' => '+',
+            '├' | '┝' | '┞' | '┟' | '┠' | '┡' | '┢' | '┣' | '╞' | '╟' | '╠' => {
+                '+'
+            }
+            '┤' | '┥' | '┦' | '┧' | '┨' | '┩' | '┪' | '┫' | '╡' | '╢' | '╣' => {
+                '+'
+            }
+            '┬' | '┭' | '┮' | '┯' | '┰' | '┱' | '┲' | '┳' | '╤' | '╥' | '╦' => {
+                '+'
+            }
+            '┴' | '┵' | '┶' | '┷' | '┸' | '┹' | '┺' | '┻' | '╧' | '╨' | '╩' => {
+                '+'
+            }
+            '┼' | '┽' | '┾' | '┿' | '╀' | '╁' | '╂' | '╃' | '╄' | '╅' | '╆' | '╇' | '╈' | '╉'
+            | '╊' | '╋' | '╪' | '╫' | '╬' => '+',
+            // Block elements → asterisk or space
+            '█' | '▓' | '▒' | '░' | '▀' | '▄' | '▌' | '▐' => '*',
+            // Arrows → ASCII arrows
+            '→' | '⇒' | '➔' | '➜' | '➝' | '➞' => '>',
+            '←' | '⇐' => '<',
+            '↑' | '⇑' => '^',
+            '↓' | '⇓' => 'v',
+            // Common emoji → descriptive or skip (keep as single char to preserve meaning)
+            '✓' | '✔' | '☑' => 'Y',
+            '✗' | '✘' | '☒' => 'X',
+            '★' | '☆' | '⭐' => '*',
+            '•' | '◦' | '‣' | '⁃' => '-',
+            // Smart quotes → regular quotes
+            '\u{2018}' | '\u{2019}' | '\u{201A}' | '\u{201B}' => '\'', // ' ' ‚ ‛
+            '\u{201C}' | '\u{201D}' | '\u{201E}' | '\u{201F}' => '"',  // " " „ ‟
+            // Dashes → regular dash
+            '–' | '—' | '―' => '-',
+            // Ellipsis
+            '…' => '.',
+            // Common status/UI emoji → skip entirely (return space to preserve word boundaries)
+            '🔍' | '📦' | '🎯' | '✅' | '❌' | '⚠' | '💭' | '📄' | '📊' | '📚' | '🚀' | '💡'
+            | '⏳' | '✨' | '🖥' | '🔨' | '🔧' | '🏷' | '🔄' | '▶' | '🔐' | '🗑' | '📜' | '⚙'
+            | '🏥' | '🧮' | '📤' | '🛑' => ' ',
+            // Everything else passes through
+            _ => c,
+        };
+        result.push(replacement);
     }
 
-    let embedding: EmbeddingResponse = response
-        .json()
-        .context("Failed to parse embedding response")?;
+    // Collapse multiple spaces
+    let mut prev_space = false;
+    result
+        .chars()
+        .filter(|&c| {
+            let is_space = c == ' ';
+            let keep = !is_space || !prev_space;
+            prev_space = is_space;
+            keep
+        })
+        .collect()
+}
 
-    Ok(embedding.embedding)
+/// Maximum retries for embedding requests
+const MAX_RETRIES: u32 = 5;
+/// Delay between retries in milliseconds (increases with each retry)
+const BASE_RETRY_DELAY_MS: u64 = 500;
+
+fn get_embedding(client: &Client, ollama_url: &str, model: &str, text: &str) -> Result<Vec<f32>> {
+    // Sanitize and truncate text for embedding model
+    let sanitized = sanitize_for_embedding(text);
+    let prompt = safe_truncate(&sanitized, MAX_EMBEDDING_CHARS).to_string();
+
+    let request = EmbeddingRequest {
+        model: model.to_string(),
+        prompt,
+    };
+
+    // Retry logic with exponential backoff for transient failures
+    let mut last_error = None;
+    for attempt in 0..MAX_RETRIES {
+        if attempt > 0 {
+            // Exponential backoff: 500ms, 1000ms, 2000ms, 4000ms
+            let delay = BASE_RETRY_DELAY_MS * (1 << (attempt - 1));
+            std::thread::sleep(std::time::Duration::from_millis(delay));
+
+            // On retry, try to "wake up" the model by sending a tiny test request
+            let _ = client
+                .post(format!("{}/api/embeddings", ollama_url))
+                .json(&EmbeddingRequest {
+                    model: model.to_string(),
+                    prompt: "test".to_string(),
+                })
+                .send();
+            std::thread::sleep(std::time::Duration::from_millis(100));
+        }
+
+        let response = client
+            .post(format!("{}/api/embeddings", ollama_url))
+            .json(&request)
+            .send();
+
+        match response {
+            Ok(resp) => {
+                if resp.status().is_success() {
+                    match resp.json::<EmbeddingResponse>() {
+                        Ok(embedding) => return Ok(embedding.embedding),
+                        Err(e) => {
+                            last_error = Some(format!("Failed to parse response: {e}"));
+                        }
+                    }
+                } else {
+                    last_error = Some(format!("Ollama returned error: {}", resp.status()));
+                }
+            }
+            Err(e) => {
+                last_error = Some(format!("Request failed: {e}"));
+            }
+        }
+    }
+
+    anyhow::bail!(
+        "Failed after {MAX_RETRIES} attempts: {}",
+        last_error.unwrap_or_else(|| "Unknown error".to_string())
+    );
 }
 
 fn main() -> Result<()> {
@@ -577,6 +707,66 @@ fn main() -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_safe_truncate_ascii() {
+        assert_eq!(safe_truncate("hello", 10), "hello");
+        assert_eq!(safe_truncate("hello world", 5), "hello");
+        assert_eq!(safe_truncate("", 5), "");
+    }
+
+    #[test]
+    fn test_safe_truncate_unicode() {
+        // Test with multi-byte UTF-8 characters
+        let s = "═══════════"; // Each ═ is 3 bytes
+        assert_eq!(safe_truncate(s, 3).chars().count(), 3);
+
+        // Mix of ASCII and multi-byte
+        let mixed = "Hello ═══ World";
+        let truncated = safe_truncate(mixed, 8);
+        assert_eq!(truncated, "Hello ══");
+        assert!(truncated.is_char_boundary(truncated.len()));
+
+        // Emoji (4 bytes each)
+        let emoji = "🔍📦🎯";
+        assert_eq!(safe_truncate(emoji, 2), "🔍📦");
+    }
+
+    #[test]
+    fn test_sanitize_for_embedding_box_drawing() {
+        // Box drawing chars should become ASCII
+        assert_eq!(sanitize_for_embedding("═══"), "---");
+        assert_eq!(sanitize_for_embedding("│text│"), "|text|");
+        assert_eq!(sanitize_for_embedding("┌──┐"), "+--+");
+    }
+
+    #[test]
+    fn test_sanitize_for_embedding_emoji() {
+        // Status emoji should become spaces
+        assert_eq!(sanitize_for_embedding("✅ Done"), " Done");
+        assert_eq!(sanitize_for_embedding("🔍 Search"), " Search");
+        // Check marks should become Y/X
+        assert_eq!(sanitize_for_embedding("✓ Yes ✗ No"), "Y Yes X No");
+    }
+
+    #[test]
+    fn test_sanitize_for_embedding_quotes_and_dashes() {
+        // Smart quotes → regular quotes (use raw strings to include curly quotes)
+        let smart_double = "\u{201C}quoted\u{201D}"; // "quoted"
+        assert_eq!(sanitize_for_embedding(smart_double), "\"quoted\"");
+        let smart_single = "\u{2018}single\u{2019}"; // 'single'
+        assert_eq!(sanitize_for_embedding(smart_single), "'single'");
+        // Em/en dashes → regular dash
+        let dashes = "a\u{2014}b\u{2013}c"; // a—b–c
+        assert_eq!(sanitize_for_embedding(dashes), "a-b-c");
+    }
+
+    #[test]
+    fn test_sanitize_for_embedding_collapses_spaces() {
+        // Multiple emoji → single space
+        assert_eq!(sanitize_for_embedding("🔍🔍🔍text"), " text");
+        assert_eq!(sanitize_for_embedding("a  b"), "a b");
+    }
 
     #[test]
     fn test_create_summary_with_headers() {

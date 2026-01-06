@@ -526,6 +526,72 @@ When generating GitHub Wiki documentation:
 ./fix-repo-links.sh             # Apply
 ```
 
+## Embedding Model Issues
+
+### 2026-01-06: nomic-embed-text Character Limit
+
+**Problem**: The `nomic-embed-text` model crashes on inputs larger than ~2500 characters.
+
+```
+Error: Ollama returned error: 500 Internal Server Error
+{"error":"do embedding request: Post \"http://127.0.0.1:XXXX/embedding\": EOF"}
+```
+
+**Root Cause**: The model's internal embedding subprocess crashes when processing large inputs, returning an EOF error.
+
+**Resolution**:
+1. Limit input text to 2000 characters (safe margin below 2500 limit)
+2. Add retry logic with exponential backoff
+3. Send a "wake up" request before retrying to restart the model backend
+
+```rust
+const MAX_EMBEDDING_CHARS: usize = 2000;
+const MAX_RETRIES: u32 = 5;
+
+// Exponential backoff: 500ms, 1000ms, 2000ms, 4000ms
+let delay = BASE_RETRY_DELAY_MS * (1 << (attempt - 1));
+```
+
+**Proactive Prevention**:
+- Always truncate text before sending to embedding model
+- Implement retry logic for all embedding calls
+- Monitor for 500 errors and EOF patterns
+
+### 2026-01-06: Unicode Character Handling in Embeddings
+
+**Problem**: String slicing in Rust using byte indices fails on multi-byte UTF-8 characters.
+
+```
+byte index 200 is not a char boundary; it is inside '═' (bytes 198..201)
+```
+
+**Resolution**: Use character-aware truncation instead of byte slicing:
+
+```rust
+fn safe_truncate(s: &str, max_chars: usize) -> &str {
+    if s.chars().count() <= max_chars {
+        s
+    } else {
+        let byte_pos = s.char_indices()
+            .nth(max_chars)
+            .map(|(pos, _)| pos)
+            .unwrap_or(s.len());
+        &s[..byte_pos]
+    }
+}
+```
+
+**Additional Fix**: Sanitize Unicode before embedding to improve stability:
+- Box drawing chars (═, │) → ASCII equivalents (-, |)
+- Emoji → spaces (preserve word boundaries)
+- Smart quotes → regular quotes
+- Em/en dashes → regular dashes
+
+**Proactive Prevention**:
+- Never use byte indices for string slicing with user content
+- Always use `.chars().count()` instead of `.len()` for character counts
+- Sanitize decorative Unicode before embedding
+
 ## Continuous Improvement
 
 Each time a new pattern of issue is discovered:
