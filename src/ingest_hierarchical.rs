@@ -16,7 +16,12 @@ struct Args {
     #[arg(help = "Path to Markdown file")]
     md_path: String,
 
-    #[arg(long, default_value = "documents", help = "Collection name")]
+    #[arg(
+        long,
+        default_value = "documents",
+        env = "RAG_COLLECTION",
+        help = "Collection name"
+    )]
     collection: String,
 
     #[arg(long, default_value = "http://localhost:6333", help = "Qdrant URL")]
@@ -667,7 +672,7 @@ fn main() -> Result<()> {
 
         let response = client
             .put(format!(
-                "{}/collections/{}/points",
+                "{}/collections/{}/points?wait=true",
                 args.qdrant_url, args.collection
             ))
             .json(&json!({
@@ -676,11 +681,21 @@ fn main() -> Result<()> {
             .send()
             .context("Failed to upload to Qdrant")?;
 
-        if !response.status().is_success() {
+        // Check HTTP status first
+        let status = response.status();
+        if !status.is_success() {
             let error_text = response
                 .text()
                 .unwrap_or_else(|_| "Unknown error".to_string());
-            anyhow::bail!("Qdrant upload failed: {}", error_text);
+            anyhow::bail!("Qdrant upload failed (HTTP {}): {}", status, error_text);
+        }
+
+        // Parse response body and check for Qdrant-level errors
+        // Qdrant returns HTTP 200 even for some errors, with error in body
+        let body: serde_json::Value = response.json().context("Failed to parse Qdrant response")?;
+
+        if let Some(error) = body.get("status").and_then(|s| s.get("error")) {
+            anyhow::bail!("Qdrant upload failed: {}", error);
         }
     }
     println!();

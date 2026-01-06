@@ -592,6 +592,69 @@ fn safe_truncate(s: &str, max_chars: usize) -> &str {
 - Always use `.chars().count()` instead of `.len()` for character counts
 - Sanitize decorative Unicode before embedding
 
+## RAG System Issues
+
+### 2026-01-06: Environment Variable Not Read by Clap
+
+**Problem**: The `RAG_COLLECTION` environment variable was being ignored by `ingest-hierarchical`. Data was always ingested to the default "documents" collection instead of the specified collection.
+
+**Root Cause**: The clap argument definition had `default_value` but was missing `env`:
+
+```rust
+// INCORRECT - env var ignored
+#[arg(long, default_value = "documents")]
+collection: String,
+
+// CORRECT - reads RAG_COLLECTION env var
+#[arg(long, default_value = "documents", env = "RAG_COLLECTION")]
+collection: String,
+```
+
+**Additional Fix Required**: Must enable the `env` feature in `Cargo.toml`:
+```toml
+clap = { version = "4.4", features = ["derive", "env"] }
+```
+
+**Proactive Prevention**:
+- When using clap with environment variables, always add both `env = "VAR_NAME"` and the cargo feature
+- Test with actual env vars, not just command-line args
+- Check collection stats after ingestion to verify data went to the right place
+
+### 2026-01-06: Qdrant Silent Errors (HTTP 200 with Error Body)
+
+**Problem**: Qdrant returns HTTP 200 even when there are errors in the request. The code was only checking status code, so errors were missed.
+
+**Symptom**: Ingestion appeared successful but collection had 0 points.
+
+**Root Cause**: Only checking HTTP status, not response body:
+```rust
+// INCORRECT - misses body errors
+if response.status().is_success() {
+    // assumed success
+}
+```
+
+**Resolution**: Parse response body and check for error field:
+```rust
+// CORRECT - check response body for errors
+let status = response.status();
+let body: Value = response.json()?;
+if let Some(error) = body.get("status").and_then(|s| s.get("error")) {
+    anyhow::bail!("Qdrant upload failed: {}", error);
+}
+```
+
+**Additional Fix**: Add `?wait=true` to Qdrant PUT URL to ensure synchronous operation:
+```rust
+let url = format!("{}/collections/{}/points?wait=true", qdrant_url, collection);
+```
+
+**Proactive Prevention**:
+- Always parse API response bodies for errors, not just HTTP status
+- Be especially careful with REST APIs that return 200 for partial failures
+- Use `?wait=true` for Qdrant operations to ensure synchronous behavior
+- Verify data was actually stored by checking collection stats after ingestion
+
 ## Continuous Improvement
 
 Each time a new pattern of issue is discovered:
